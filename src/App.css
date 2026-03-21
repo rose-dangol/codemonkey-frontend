@@ -1,0 +1,43 @@
+.heading-font {
+  color: var(--color-heading);
+}
+
+.description-text {
+  color: var(--color-description);
+}
+
+.sub-text {
+  color: var(--color-subtext);
+}
+
+.bg-primary {
+  background-color: var(--bg-primary);
+}
+
+.bg-secondary {
+  background-color: var(--bg-secondary);
+}
+
+.action {
+  background-color: var(--action--color);
+}
+
+.action-text {
+  color: var(--action--color);
+}
+
+.action-hover:hover {
+  color: var(--action--color);
+}
+
+.hover-color {
+  background-color: var(--hoverColor);
+}
+
+.state-color {
+  background-color: var(--state--color);
+}
+
+.state-color-text {
+  color: var(--state--color);
+}

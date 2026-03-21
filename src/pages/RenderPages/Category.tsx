@@ -1,0 +1,169 @@
+import type { ColumnDef } from "@tanstack/react-table";
+import DemoPage from "@/payments/page";
+import { CategoryService } from "@/services/OrderManagement/Category";
+import { useEffect, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { Category } from "@/TypeDefinitions/Category";
+import "@/App.css";
+import { UpdateModal } from "@/Layout/UpdateModal";
+import {
+  updateCategoryFields,
+  type UpdateCategoryDto,
+} from "@/TypeDefinitions/ModalType";
+import { SquarePen } from "lucide-react";
+
+// Define columns dynamically for category data
+
+const Category = () => {
+  const [open, setOpen] = useState(false);
+  const [openAdd, setOpenAdd] = useState(false);
+  const [selectedCategory, setSelectedCategory] =
+    useState<UpdateCategoryDto | null>(null);
+
+  const queryClient = useQueryClient();
+
+  const { data: payments } = useQuery({
+    queryKey: ["payments"],
+    queryFn: () => CategoryService.getAll(),
+  });
+
+  const mutation = useMutation({
+    mutationFn: (data: UpdateCategoryDto) =>
+      CategoryService.update(data.id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["payments"] });
+      // toast.success("Category updated successfully");
+    },
+  });
+
+  const addMutation = useMutation({
+    mutationFn: (data: UpdateCategoryDto) => CategoryService.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["payments"] });
+      // toast.success("Category updated successfully");
+    },
+  });
+
+  const handleUpdate = (updatedData: Partial<UpdateCategoryDto>) => {
+    if (!selectedCategory) return;
+    mutation.mutate({
+      ...updatedData,
+      id: selectedCategory.id,
+    });
+  };
+
+  const handleDelete = async (id: string[]) => {
+    console.log("selectedId:", id)
+    await CategoryService.delete(id);
+    queryClient.invalidateQueries({ queryKey: ["payments"] });
+  };
+
+  const handleAdd = (data: Partial<UpdateCategoryDto>) => {
+    addMutation.mutate(data as UpdateCategoryDto);
+  };
+  const [categoryData, setCategoryData] = useState<Category[]>([]);
+
+  const categoryColumns: ColumnDef<any, any>[] = [
+    {
+      accessorKey: "categoryImage",
+      header: "Category Image",
+    },
+    {
+      accessorKey: "categoryName",
+      header: "Category Name",
+    },
+    {
+      accessorKey: "categoryDesc",
+      header: "Category Description",
+    },
+    {
+      accessorKey: "categoryParentId",
+      header: "Category Parent",
+      cell: ({ row }) => {
+        const parent = categoryData.find(
+          (c) => c.id === row.original.categoryParentId,
+        );
+
+        return parent ? parent.categoryName : "None";
+      },
+    },
+    {
+      accessorKey: "action",
+      header: "Action",
+      cell: ({ row }) => (
+        <div
+          className="flex justify-center items-center rounded-lg p-2 w-max cursor-pointer transition-all hover:bg-gray-100 hover:scale-110 action-hover"
+          onClick={() => {
+            setSelectedCategory(row.original);
+            setOpen(true);
+          }}
+        >
+          <SquarePen size={20} />
+        </div>
+      ),
+    },
+
+    // Add more columns as needed
+  ];
+
+  const flatallNodes = (
+    data: Category[],
+    level = 0,
+    result: (Category & { level: number })[] = [],
+  ) => {
+    for (const item of data) {
+      result.push({ ...item, level });
+
+      if (item.subCategories?.length) {
+        flatallNodes(item.subCategories, level + 1, result);
+      }
+    }
+
+    return result;
+  };
+
+  useEffect(() => {
+    payments && setCategoryData(flatallNodes(payments));
+  }, [payments]);
+
+  return (
+    <div>
+      <h1 className="heading-font">Category</h1>
+
+      <DemoPage
+        data={categoryData}
+        columns={categoryColumns}
+        onUpdate={handleUpdate}
+        onDelete={handleDelete}
+        openAdd={openAdd}
+        setOpenAdd={setOpenAdd}
+      />
+      <UpdateModal
+        open={open}
+        setOpen={setOpen}
+        title="Update Category"
+        description="Update category details"
+        fields={updateCategoryFields(categoryData, selectedCategory?.id)}
+        initialData={selectedCategory ?? {}} // prefill form
+        allItems={categoryData}
+        onUpdate={(updatedData) => {
+          handleUpdate(updatedData);
+          setOpen(false);
+        }}
+      />
+      <UpdateModal
+        open={openAdd}
+        setOpen={setOpenAdd}
+        title="Add Category"
+        description="Add new category"
+        fields={updateCategoryFields(categoryData)}
+        onUpdate={(updatedData) => {
+          handleAdd(updatedData);
+          setOpenAdd(false);
+        }}
+      />
+    </div>
+  );
+};
+
+export default Category;
