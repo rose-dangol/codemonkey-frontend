@@ -137,6 +137,7 @@ const Category = () => {
         onDelete={handleDelete}
         openAdd={openAdd}
         setOpenAdd={setOpenAdd}
+        title="Category"
       />
       <UpdateModal
         open={open}

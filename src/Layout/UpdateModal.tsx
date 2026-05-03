@@ -15,9 +15,11 @@ import type {
   UpdateCategoryDto,
   UpdateModalProps,
 } from "@/TypeDefinitions/ModalType";
+import Select from 'react-select';
 
 export function UpdateModal(props: UpdateModalProps<UpdateCategoryDto>) {
   const [formData, setFormData] = useState<Record<string, any>>({});
+  console.log("called", props.fields)
 
   useEffect(() => {
     if (props.open) {
@@ -26,7 +28,7 @@ export function UpdateModal(props: UpdateModalProps<UpdateCategoryDto>) {
   }, [props.open, props.initialData]);
 
   const handleChange = (key: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [key]: value })); 
+    setFormData((prev) => ({ ...prev, [key]: value }));
   };
 
   const handleSubmit = (e: React.MouseEvent) => {
@@ -68,13 +70,28 @@ export function UpdateModal(props: UpdateModalProps<UpdateCategoryDto>) {
                     </option>
                   ))}
                 </select>
+              ) : field.type === "multi-select" && field.options ? (
+                <Select
+                  isMulti
+                  name={field.key}
+                  options={field.options}
+                  defaultValue={field.options.filter((opt: any) => opt.isHidden)}
+                  className="description-text bg-white"
+                  onChange={(selected: any) => {
+                    console.log("selected",selected);
+                    handleChange(
+                      field.key,
+                      selected.map((item: any) => item.value)
+                    )
+                  }}
+                />
               ) : (
                 <Input
                   id={field.key}
                   type={field.type ?? "text"}
                   placeholder={field.placeholder ?? `Enter ${field.label}`}
                   value={formData[field.key] ?? ""}
-                  onChange={(e) => handleChange(field.key, e.target.value)}
+                  onChange={(e) => handleChange(field.key, e.target.value.toString())}
                   className="description-text"
                 />
               )}

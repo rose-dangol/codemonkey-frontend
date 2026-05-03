@@ -12,11 +12,11 @@ import {
   type UpdateBrandDto,
   type UpdateCategoryDto,
 } from "@/TypeDefinitions/ModalType";
-import { SquarePen } from "lucide-react";
+import { CloudCog, SquarePen } from "lucide-react";
 import type { Brands } from "@/TypeDefinitions/Brands";
 import { BrandService } from "@/services/OrderManagement/BrandService";
+import { ProductService } from "@/services/OrderManagement/ProductService";
 
-// Define columns dynamically for category data
 
 const Brands = () => {
   const [open, setOpen] = useState(false);
@@ -32,6 +32,11 @@ const Brands = () => {
     queryFn: () => BrandService.getAll(),
   });
 
+  const {data: allProducts} = useQuery({
+    queryKey: ["allProducts"],
+    queryFn: () => ProductService.getAll(),
+  })
+
   const mutation = useMutation({
     mutationFn: (data: UpdateBrandDto) => BrandService.update(data.id, data),
     onSuccess: () => {
@@ -41,7 +46,7 @@ const Brands = () => {
   });
 
   const addMutation = useMutation({
-    mutationFn: (data: UpdateBrandDto) => CategoryService.create(data),
+    mutationFn: (data: UpdateBrandDto) => BrandService.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["payments"] });
       // toast.success("Category updated successfully");
@@ -50,6 +55,7 @@ const Brands = () => {
 
   const handleUpdate = (updatedData: Partial<UpdateBrandDto>) => {
     if (!selectedBrand) return;
+    console.log("called")
     mutation.mutate({
       ...updatedData,
       id: selectedBrand.id,
@@ -88,12 +94,13 @@ const Brands = () => {
 
         return (
           <div className="flex flex-wrap gap-1">
-            {products.slice(0, 3).map((p: any, i: number) => (
+
+            {products .filter((p: any) => p.isHidden).slice(0, 3).map((p: any, i: number) => (
               <span
                 key={i}
                 className="px-2 py-1 text-xs bg-gray-100 border rounded-md"
               >
-                {p.name}
+                {p.productName}
               </span>
             ))}
 
@@ -102,6 +109,9 @@ const Brands = () => {
                 +{products.length - 3}
               </span>
             )}
+            {/* {products?.slice(0, 3).map((p: any, i: number) => {
+              return <span key={p}>{p.productName}{products.length > i + 1 ? "," : products.length > 3 ? "..." : ""}</span>
+            })} */}
           </div>
         );
       },
@@ -140,13 +150,14 @@ const Brands = () => {
         onDelete={handleDelete}
         openAdd={openAdd}
         setOpenAdd={setOpenAdd}
+        title={"Brand"}
       />
       <UpdateModal
         open={open}
         setOpen={setOpen}
         title="Update Brand"
         description="Update Brand details"
-        fields={updateBrandFields(brandData, selectedBrand?.id)}
+        fields={updateBrandFields(brandData, selectedBrand?.id,allProducts)}
         initialData={selectedBrand ?? {}} // prefill form
         allItems={brandData}
         onUpdate={(updatedData) => {
