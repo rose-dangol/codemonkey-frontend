@@ -32,8 +32,8 @@ type UpdateField<T = any> = {
   key: keyof T;
   label: string;
   placeholder?: string;
-  type?: "text" | "number" | "email" | "select"|"multi-select";
-  options?: { label: string; value: string }[];
+  type?: "text" | "number" | "email" | "select" | "multi-select" | "dropdown"|"select(parent)";
+  options?: { label: string; value: string; children?: any[] }[];
   cell?: (
     row: { original: T },
     allItems?: UpdateCategoryDto[],
@@ -54,7 +54,7 @@ export const updateCategoryFields = (
       key: "categoryParentId",
       label: "Parent Category",
       placeholder: "Enter parent category",
-      type: "select",
+      type: "select(parent)",
       options: allItems?.filter((c) => c.id !== currentId)?.map((c) => ({
         label: c.categoryName,
         value: c.id,
@@ -130,9 +130,20 @@ export type UpdateProductDto = {
 };
 
 export const updateProductFields = (
-  allItems?: Product[],
+  categories?: Category[],
   currentId?: string,
-): UpdateField<UpdateProductDto>[] => [
+): UpdateField<UpdateProductDto>[] => {
+  const buildCategoryOptions = (cats?: Category[]): any[] => {
+    if (!cats) return [];
+    return cats
+      .filter((c) => c.id !== currentId)
+      .map((c) => ({
+        label: c.categoryName,
+        value: c.id,
+        children: c.subCategories && c.subCategories.length > 0 ? buildCategoryOptions(c.subCategories) : undefined,
+      }));
+  };
+  return [
     {
       key: "productName",
       label: "Product Name",
@@ -143,13 +154,14 @@ export const updateProductFields = (
       key: "quantity",
       label: "Quantity",
       placeholder: "Enter quantity",
-      type: "text",
+      type: "number",
     },
     {
       key: "productCategory",
       label: "Product Category",
       placeholder: "Enter product category",
-      type: "text",
+      type: "select",
+      options: buildCategoryOptions(categories),
     },
     {
       key: "brand",
@@ -164,3 +176,4 @@ export const updateProductFields = (
       type: "text",
     },
   ];
+};

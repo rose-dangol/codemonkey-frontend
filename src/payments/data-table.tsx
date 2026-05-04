@@ -102,8 +102,7 @@ export function DataTable<TData extends { id: string }>({
       enableHiding: false,
     });
 
-   
-    return [...cols, ...fields, ];
+    return [...cols, ...fields];
   }, [fields, enableRowSelection]);
 
   const table = useReactTable({
@@ -329,7 +328,17 @@ export function DataTable<TData extends { id: string }>({
                 <DropdownMenuItem className="text-sm rounded-lg px-2 py-1.5 cursor-pointer text-slate-600 hover:bg-slate-50">
                   Export Selected
                 </DropdownMenuItem>
-                <DropdownMenuItem className="text-sm rounded-lg px-2 py-1.5 cursor-pointer text-red-600 hover:bg-red-50 focus:bg-red-50 focus:text-red-600" onClick={() => { onDelete && onDelete(table.getFilteredSelectedRowModel().rows.map((row) => row.original.id)) }}>
+                <DropdownMenuItem
+                  className="text-sm rounded-lg px-2 py-1.5 cursor-pointer text-red-600 hover:bg-red-50 focus:bg-red-50 focus:text-red-600"
+                  onClick={() => {
+                    onDelete &&
+                      onDelete(
+                        table
+                          .getFilteredSelectedRowModel()
+                          .rows.map((row) => row.original.id),
+                      );
+                  }}
+                >
                   Delete Selected
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -379,13 +388,13 @@ export function DataTable<TData extends { id: string }>({
       </div>
 
       {/* Table */}
-      <div className="rounded-2xl border border-slate-100 bg-white overflow-hidden shadow-sm shadow-slate-100">
+      <div className="rounded-2xl border border-[#18181b] bg-[#09090b] overflow-hidden shadow-sm shadow-black/40">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow
                 key={headerGroup.id}
-                className="border-b border-slate-100 state-color hover:bg-slate-50/70"
+                className="border-b border-[#18181b] bg-[#111114] hover:bg-[#18181b]"
               >
                 {headerGroup.headers.map((header) => (
                   <TableHead
@@ -396,7 +405,7 @@ export function DataTable<TData extends { id: string }>({
                     {header.isPlaceholder ? null : header.column.getCanSort() ? (
                       <button
                         type="button"
-                        className="flex items-center gap-1 hover:text-slate-800 transition-colors cursor-pointer select-none"
+                        className="flex items-center gap-1 text-[#C7C7C7] hover:text-white transition-colors cursor-pointer select-none"
                         onClick={header.column.getToggleSortingHandler()}
                       >
                         {flexRender(
@@ -404,11 +413,11 @@ export function DataTable<TData extends { id: string }>({
                           header.getContext(),
                         )}
                         {header.column.getIsSorted() === "asc" ? (
-                          <ChevronUp className="h-3.5 w-3.5 text-blue-500" />
+                          <ChevronUp className="h-3.5 w-3.5 text-[#FFD35A]" />
                         ) : header.column.getIsSorted() === "desc" ? (
-                          <ChevronDown className="h-3.5 w-3.5 text-blue-500" />
+                          <ChevronDown className="h-3.5 w-3.5 text-[#FFD35A]" />
                         ) : (
-                          <ChevronsUpDown className="h-3.5 w-3.5 opacity-25" />
+                          <ChevronsUpDown className="h-3.5 w-3.5 opacity-30" />
                         )}
                       </button>
                     ) : (
@@ -430,17 +439,17 @@ export function DataTable<TData extends { id: string }>({
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
                   className={`
-                border-b border-slate-50 last:border-0
-                transition-colors duration-100
-                hover:bg-blue-50/40
-                data-[state=selected]:bg-[#FFCB44]
-                ${i % 2 === 0 ? "bg-white" : "bg-slate-50/3"}
-              `}
+              border-b border-[#18181b] last:border-0
+              transition-colors duration-100
+              hover:bg-[#111114]
+              data-[state=selected]:bg-[#FFD35A]
+              ${i % 2 === 0 ? "bg-[#09090b]" : "bg-[#111114]"}
+            `}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell
                       key={cell.id}
-                      className="px-4 py-3.5 text-sm font-heading"
+                      className="px-4 py-3.5 text-sm text-[#C7C7C7]"
                     >
                       {flexRender(
                         cell.column.columnDef.cell,
@@ -453,7 +462,7 @@ export function DataTable<TData extends { id: string }>({
             ) : (
               <TableRow className="hover:bg-transparent">
                 <TableCell colSpan={fields.length} className="h-32 text-center">
-                  <div className="flex flex-col items-center gap-2 text-slate-400">
+                  <div className="flex flex-col items-center gap-2 text-[#8A8A8A]">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="32"
@@ -469,7 +478,7 @@ export function DataTable<TData extends { id: string }>({
                       <rect width="18" height="18" x="3" y="3" rx="2" />
                       <path d="M3 9h18M9 21V9" />
                     </svg>
-                    <span className="text-sm font-medium">
+                    <span className="text-sm font-medium text-white">
                       No results found
                     </span>
                     <span className="text-xs opacity-70">

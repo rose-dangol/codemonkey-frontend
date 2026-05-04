@@ -125,6 +125,16 @@ export default function AppLayout() {
       backgroundSecondary: "#FFFBFa",
       backgroundPrimary: "#FEFEFF",
     },
+    {
+      title: "Dark Theme",
+      heading: "#FFFFFF",
+      description: "#C7C7C7",
+      subText: "#8A8A8A",
+      backgroundPrimary: "#09090b",
+      backgroundSecondary: "#111114",
+      Action: "#FFD35A",
+      State: "#19A7A5",
+    },
   ];
 
   const submenuVariants = {
@@ -155,7 +165,6 @@ export default function AppLayout() {
   };
 
   const stored = localStorage.getItem("theme");
-
 
   return (
     <SidebarProvider>
@@ -305,8 +314,7 @@ export default function AppLayout() {
         <div className="flex-1">
           <SidebarTrigger />
           <div className="px-10">
-
-          <Outlet />
+            <Outlet />
           </div>
         </div>
       </div>

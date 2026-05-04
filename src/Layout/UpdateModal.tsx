@@ -15,11 +15,11 @@ import type {
   UpdateCategoryDto,
   UpdateModalProps,
 } from "@/TypeDefinitions/ModalType";
-import Select from 'react-select';
+import Select from "react-select";
+import { TreeDropdown } from "@/components/TreeDropdown";
 
 export function UpdateModal(props: UpdateModalProps<UpdateCategoryDto>) {
   const [formData, setFormData] = useState<Record<string, any>>({});
-  console.log("called", props.fields)
 
   useEffect(() => {
     if (props.open) {
@@ -27,7 +27,7 @@ export function UpdateModal(props: UpdateModalProps<UpdateCategoryDto>) {
     }
   }, [props.open, props.initialData]);
 
-  const handleChange = (key: string, value: string) => {
+  const handleChange = (key: string, value: string | number) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
   };
 
@@ -35,6 +35,83 @@ export function UpdateModal(props: UpdateModalProps<UpdateCategoryDto>) {
     e.preventDefault();
     props.onUpdate?.(formData);
     props.setOpen(false);
+  };
+
+  const fieldRenderers: Record<string, (field: any) => React.ReactNode> = {
+    select: (field) => (
+      <TreeDropdown
+        options={field.options}
+        value={formData[field.key] ?? ""}
+        onChange={(val) => handleChange(field.key, val)}
+      />
+    ),
+    "select(parent)": (field) => (
+      <TreeDropdown
+        options={field.options}
+        value={formData[field.key] ?? ""}
+        onChange={(val) => handleChange(field.key, val)}
+        allowParentSelect
+      />
+    ),
+
+    "multi-select": (field) => (
+      <Select
+        isMulti
+        name={field.key}
+        options={field.options}
+        defaultValue={field.options?.filter((opt: any) => opt.isHidden)}
+        className="description-text bg-white"
+        onChange={(selected: any) => {
+          handleChange(
+            field.key,
+            selected.map((item: any) => item.value),
+          );
+        }}
+      />
+    ),
+
+    number: (field) => (
+      <Input
+        id={field.key}
+        type="number"
+        placeholder={field.placeholder ?? `Enter ${field.label}`}
+        value={formData[field.key] ?? ""}
+        onChange={(e) =>
+          handleChange(
+            field.key,
+            e.target.value === "" ? "" : Number(e.target.value),
+          )
+        }
+        className="description-text"
+      />
+    ),
+
+    default: (field) => (
+      <Input
+        id={field.key}
+        type={field.type ?? "text"}
+        placeholder={field.placeholder ?? `Enter ${field.label}`}
+        value={formData[field.key] ?? ""}
+        onChange={(e) => handleChange(field.key, e.target.value)}
+        className="description-text"
+      />
+    ),
+
+    dropdown: (field) => (
+      <select
+        id={field.key}
+        value={formData[field.key] ?? ""}
+        onChange={(e) => handleChange(field.key, e.target.value)}
+        className="description-text border p-2 rounded w-full"
+      >
+        <option value="">None</option>
+        {field.options?.map((opt: any) => (
+          <option key={opt.value} value={opt.value}>
+            {opt.label}
+          </option>
+        ))}
+      </select>
+    ),
   };
 
   return (
@@ -50,53 +127,19 @@ export function UpdateModal(props: UpdateModalProps<UpdateCategoryDto>) {
         </DialogHeader>
 
         <div className="space-y-4">
-          {props.fields.map((field) => (
-            <div key={field.key} className="space-y-1">
-              <Label htmlFor={field.key} className="description-text">
-                {field.label}
-              </Label>
+          {props.fields.map((field) => {
+            const renderField =
+              fieldRenderers[field.type ?? "default"] ?? fieldRenderers.default;
+            return (
+              <div key={field.key} className="space-y-1">
+                <Label htmlFor={field.key} className="description-text">
+                  {field.label}
+                </Label>
 
-              {field.type === "select" && field.options ? (
-                <select
-                  id={field.key}
-                  value={formData[field.key] ?? ""}
-                  onChange={(e) => handleChange(field.key, e.target.value)}
-                  className="description-text border p-2 rounded w-full"
-                >
-                  <option value="">None</option>
-                  {field.options.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
-              ) : field.type === "multi-select" && field.options ? (
-                <Select
-                  isMulti
-                  name={field.key}
-                  options={field.options}
-                  defaultValue={field.options.filter((opt: any) => opt.isHidden)}
-                  className="description-text bg-white"
-                  onChange={(selected: any) => {
-                    console.log("selected",selected);
-                    handleChange(
-                      field.key,
-                      selected.map((item: any) => item.value)
-                    )
-                  }}
-                />
-              ) : (
-                <Input
-                  id={field.key}
-                  type={field.type ?? "text"}
-                  placeholder={field.placeholder ?? `Enter ${field.label}`}
-                  value={formData[field.key] ?? ""}
-                  onChange={(e) => handleChange(field.key, e.target.value.toString())}
-                  className="description-text"
-                />
-              )}
-            </div>
-          ))}
+                {renderField(field)}
+              </div>
+            );
+          })}
         </div>
 
         <DialogFooter>
