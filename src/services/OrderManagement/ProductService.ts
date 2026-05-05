@@ -15,7 +15,7 @@ export const ProductService = {
 
     create: async (data: UpdateBrandDto) => {
         try {
-            const res = await api.post(`brand/addBrand`, data);
+            const res = await api.post(`product/addProduct`, data);
             return res.data;
         } catch (error: any) {
             console.log(error);

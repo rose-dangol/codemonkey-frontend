@@ -33,6 +33,11 @@ const Product = () => {
     queryFn: () => ProductService.getAll(),
   });
 
+  const { data: brands } = useQuery({
+    queryKey: ["payments"],
+    queryFn: () => BrandService.getAll(),
+  });
+
   const { data: productCategory } = useQuery({
     queryKey: ["product-category"],
     queryFn: () => CategoryService.getAll(),
@@ -47,7 +52,7 @@ const Product = () => {
   });
 
   const addMutation = useMutation({
-    mutationFn: (data: UpdateBrandDto) => BrandService.create(data),
+    mutationFn: (data: UpdateBrandDto) => ProductService.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       // toast.success("Category updated successfully");
@@ -144,8 +149,12 @@ const Product = () => {
         setOpen={setOpen}
         title="Update Product"
         description="Update Product details"
-        fields={updateProductFields(productCategory, selectedProduct?.id)}
-        initialData={selectedProduct ?? {}} // prefill form
+        fields={updateProductFields(
+          brands,
+          productCategory,
+          selectedProduct?.id,
+        )}
+        initialData={selectedProduct ?? {}}
         allItems={productCategory}
         onUpdate={(updatedData) => {
           handleUpdate(updatedData);
@@ -157,7 +166,7 @@ const Product = () => {
         setOpen={setOpenAdd}
         title="Add Product"
         description="Add new Product"
-        fields={updateProductFields(productCategory)}
+        fields={updateProductFields(brands, productCategory)}
         onUpdate={(updatedData) => {
           handleAdd(updatedData);
           setOpenAdd(false);

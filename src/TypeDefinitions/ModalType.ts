@@ -1,3 +1,4 @@
+import { CloudCog } from "lucide-react";
 import type { Brands } from "./Brands";
 import type { Category } from "./Category";
 import type { Product } from "./Product";
@@ -124,12 +125,13 @@ export type UpdateProductDto = {
   id: string;
   productName?: string;
   quantity?: number;
-  productCategory?: string;
-  brand?: string;
+  productCategoryId?: string;
+  productBrandId?: string;
   productImage?: string;
 };
 
 export const updateProductFields = (
+  brands?: Brands[],
   categories?: Category[],
   currentId?: string,
 ): UpdateField<UpdateProductDto>[] => {
@@ -142,6 +144,15 @@ export const updateProductFields = (
         value: c.id,
         children: c.subCategories && c.subCategories.length > 0 ? buildCategoryOptions(c.subCategories) : undefined,
       }));
+  };
+
+  const buildBrandOptions = (brand?: Brands[]): any[] => {
+    console.log("brand : ", brand);
+    if (!brand) return [];
+    return brand.map((b) => ({
+      label: b.brandName,
+      value: b.id,
+    }));
   };
   return [
     {
@@ -157,17 +168,18 @@ export const updateProductFields = (
       type: "number",
     },
     {
-      key: "productCategory",
+      key: "productCategoryId",
       label: "Product Category",
       placeholder: "Enter product category",
       type: "select",
       options: buildCategoryOptions(categories),
     },
     {
-      key: "brand",
+      key: "productBrandId",
       label: "Brand",
       placeholder: "Enter brand",
-      type: "text",
+      type: "select(parent)",
+      options: buildBrandOptions(brands),
     },
     {
       key: "productImage",
