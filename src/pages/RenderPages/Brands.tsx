@@ -17,7 +17,6 @@ import type { Brands } from "@/TypeDefinitions/Brands";
 import { BrandService } from "@/services/OrderManagement/BrandService";
 import { ProductService } from "@/services/OrderManagement/ProductService";
 
-
 const Brands = () => {
   const [open, setOpen] = useState(false);
   const [openAdd, setOpenAdd] = useState(false);
@@ -32,10 +31,10 @@ const Brands = () => {
     queryFn: () => BrandService.getAll(),
   });
 
-  const {data: allProducts} = useQuery({
+  const { data: allProducts } = useQuery({
     queryKey: ["allProducts"],
     queryFn: () => ProductService.getAll(),
-  })
+  });
 
   const mutation = useMutation({
     mutationFn: (data: UpdateBrandDto) => BrandService.update(data.id, data),
@@ -55,7 +54,7 @@ const Brands = () => {
 
   const handleUpdate = (updatedData: Partial<UpdateBrandDto>) => {
     if (!selectedBrand) return;
-    console.log("called")
+    console.log("called");
     mutation.mutate({
       ...updatedData,
       id: selectedBrand.id,
@@ -94,15 +93,17 @@ const Brands = () => {
 
         return (
           <div className="flex flex-wrap gap-1">
-
-            {products .filter((p: any) => p.isHidden).slice(0, 3).map((p: any, i: number) => (
-              <span
-                key={i}
-                className="px-2 py-1 text-xs bg-gray-100 border rounded-md"
-              >
-                {p.productName}
-              </span>
-            ))}
+            {products
+              .filter((p: any) => p.isHidden)
+              .slice(0, 3)
+              .map((p: any, i: number) => (
+                <span
+                  key={i}
+                  className="px-2 py-1 text-xs bg-gray-100 border rounded-md"
+                >
+                  {p.productName}
+                </span>
+              ))}
 
             {products.length > 3 && (
               <span className="px-2 py-1 text-xs bg-gray-200 rounded-md">
@@ -157,7 +158,7 @@ const Brands = () => {
         setOpen={setOpen}
         title="Update Brand"
         description="Update Brand details"
-        fields={updateBrandFields(brandData, selectedBrand?.id,allProducts)}
+        fields={updateBrandFields(brandData, selectedBrand?.id, allProducts)}
         initialData={selectedBrand ?? {}} // prefill form
         allItems={brandData}
         onUpdate={(updatedData) => {

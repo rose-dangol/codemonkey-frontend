@@ -7,9 +7,7 @@ export function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
 
       <p>{String(error)}</p>
 
-      <button onClick={resetErrorBoundary}>
-        Try Again
-      </button>
+      <button onClick={resetErrorBoundary}>Try Again</button>
     </div>
   );
 }

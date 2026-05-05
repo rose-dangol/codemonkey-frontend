@@ -9,7 +9,7 @@ type DemoPageProps = {
   onDelete?: (id: string[]) => void;
   openAdd?: boolean;
   setOpenAdd?: (open: boolean) => void;
-  title: string
+  title: string;
 };
 
 export default function DemoPage({
@@ -19,7 +19,7 @@ export default function DemoPage({
   onDelete,
   openAdd,
   setOpenAdd,
-  title = "Value"
+  title = "Value",
 }: DemoPageProps) {
   return (
     <div className="container mx-auto py-10">

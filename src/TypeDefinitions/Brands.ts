@@ -6,4 +6,4 @@ export type Brands = {
   brandImage: string;
   brandDesc: string;
   products: Product[];
-}
+};

@@ -53,7 +53,7 @@ const Category = () => {
   };
 
   const handleDelete = async (id: string[]) => {
-    console.log("selectedId:", id)
+    console.log("selectedId:", id);
     await CategoryService.delete(id);
     queryClient.invalidateQueries({ queryKey: ["payments"] });
   };

@@ -32,7 +32,7 @@ type UpdateField<T = any> = {
   key: keyof T;
   label: string;
   placeholder?: string;
-  type?: "text" | "number" | "email" | "select"|"multi-select";
+  type?: "text" | "number" | "email" | "select" | "multi-select";
   options?: { label: string; value: string }[];
   cell?: (
     row: { original: T },
@@ -44,35 +44,37 @@ export const updateCategoryFields = (
   allItems?: Category[],
   currentId?: string,
 ): UpdateField<UpdateCategoryDto>[] => [
-    {
-      key: "categoryName",
-      label: "Category Name",
-      placeholder: "Enter category name",
-      type: "text",
-    },
-    {
-      key: "categoryParentId",
-      label: "Parent Category",
-      placeholder: "Enter parent category",
-      type: "select",
-      options: allItems?.filter((c) => c.id !== currentId)?.map((c) => ({
+  {
+    key: "categoryName",
+    label: "Category Name",
+    placeholder: "Enter category name",
+    type: "text",
+  },
+  {
+    key: "categoryParentId",
+    label: "Parent Category",
+    placeholder: "Enter parent category",
+    type: "select",
+    options: allItems
+      ?.filter((c) => c.id !== currentId)
+      ?.map((c) => ({
         label: c.categoryName,
         value: c.id,
       })),
-    },
-    {
-      key: "categoryImage",
-      label: "Category Image",
-      placeholder: "Enter image url",
-      type: "text",
-    },
-    {
-      key: "categoryDesc",
-      label: "Category Description",
-      placeholder: "Enter description",
-      type: "text",
-    },
-  ];
+  },
+  {
+    key: "categoryImage",
+    label: "Category Image",
+    placeholder: "Enter image url",
+    type: "text",
+  },
+  {
+    key: "categoryDesc",
+    label: "Category Description",
+    placeholder: "Enter description",
+    type: "text",
+  },
+];
 
 export type UpdateBrandDto = {
   id: string;
@@ -87,38 +89,37 @@ export const updateBrandFields = (
   currentId?: string,
   allProducts?: Product[],
 ): UpdateField<UpdateBrandDto>[] => [
-    {
-      key: "brandName",
-      label: "Brand Name",
-      placeholder: "Enter brand name",
-      type: "text",
-    },
-    {
-      key: "brandImage",
-      label: "Brand Image",
-      placeholder: "Enter image url",
-      type: "text",
-    },
-    {
-      key: "brandDesc",
-      label: "Brand Description",
-      placeholder: "Enter description",
-      type: "text",
-    },
-    {
-      key: "productId",
-      label: "Products",
-      placeholder: "Enter products",
-      type: "multi-select",
-      options:
-        allProducts?.map((p) => ({
-          label: p.productName,
-          value: p.id,
-          isHidden: p.isHidden,
-        })) ?? [], 
-    },
-  ];
-
+  {
+    key: "brandName",
+    label: "Brand Name",
+    placeholder: "Enter brand name",
+    type: "text",
+  },
+  {
+    key: "brandImage",
+    label: "Brand Image",
+    placeholder: "Enter image url",
+    type: "text",
+  },
+  {
+    key: "brandDesc",
+    label: "Brand Description",
+    placeholder: "Enter description",
+    type: "text",
+  },
+  {
+    key: "productId",
+    label: "Products",
+    placeholder: "Enter products",
+    type: "multi-select",
+    options:
+      allProducts?.map((p) => ({
+        label: p.productName,
+        value: p.id,
+        isHidden: p.isHidden,
+      })) ?? [],
+  },
+];
 
 export type UpdateProductDto = {
   id: string;
@@ -133,34 +134,34 @@ export const updateProductFields = (
   allItems?: Product[],
   currentId?: string,
 ): UpdateField<UpdateProductDto>[] => [
-    {
-      key: "productName",
-      label: "Product Name",
-      placeholder: "Enter product name",
-      type: "text",
-    },
-    {
-      key: "quantity",
-      label: "Quantity",
-      placeholder: "Enter quantity",
-      type: "text",
-    },
-    {
-      key: "productCategory",
-      label: "Product Category",
-      placeholder: "Enter product category",
-      type: "text",
-    },
-    {
-      key: "brand",
-      label: "Brand",
-      placeholder: "Enter brand",
-      type: "text",
-    },
-    {
-      key: "productImage",
-      label: "Product Image",
-      placeholder: "Enter image url",
-      type: "text",
-    },
-  ];
+  {
+    key: "productName",
+    label: "Product Name",
+    placeholder: "Enter product name",
+    type: "text",
+  },
+  {
+    key: "quantity",
+    label: "Quantity",
+    placeholder: "Enter quantity",
+    type: "text",
+  },
+  {
+    key: "productCategory",
+    label: "Product Category",
+    placeholder: "Enter product category",
+    type: "text",
+  },
+  {
+    key: "brand",
+    label: "Brand",
+    placeholder: "Enter brand",
+    type: "text",
+  },
+  {
+    key: "productImage",
+    label: "Product Image",
+    placeholder: "Enter image url",
+    type: "text",
+  },
+];
