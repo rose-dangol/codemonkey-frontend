@@ -35,7 +35,9 @@ export const CategoryService = {
   },
 
   delete: async (id: string[]) => {
-    const res = await api.delete(`category/deleteCategory`, { data: { categoryId: id } });
+    const res = await api.delete(`category/deleteCategory`, {
+      data: { categoryId: id },
+    });
     return res.data;
   },
 };

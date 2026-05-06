@@ -15,11 +15,11 @@ import type {
   UpdateCategoryDto,
   UpdateModalProps,
 } from "@/TypeDefinitions/ModalType";
-import Select from 'react-select';
+import Select from "react-select";
 
 export function UpdateModal(props: UpdateModalProps<UpdateCategoryDto>) {
   const [formData, setFormData] = useState<Record<string, any>>({});
-  console.log("called", props.fields)
+  console.log("called", props.fields);
 
   useEffect(() => {
     if (props.open) {
@@ -75,14 +75,16 @@ export function UpdateModal(props: UpdateModalProps<UpdateCategoryDto>) {
                   isMulti
                   name={field.key}
                   options={field.options}
-                  defaultValue={field.options.filter((opt: any) => opt.isHidden)}
+                  defaultValue={field.options.filter(
+                    (opt: any) => opt.isHidden,
+                  )}
                   className="description-text bg-white"
                   onChange={(selected: any) => {
-                    console.log("selected",selected);
+                    console.log("selected", selected);
                     handleChange(
                       field.key,
-                      selected.map((item: any) => item.value)
-                    )
+                      selected.map((item: any) => item.value),
+                    );
                   }}
                 />
               ) : (
@@ -91,7 +93,9 @@ export function UpdateModal(props: UpdateModalProps<UpdateCategoryDto>) {
                   type={field.type ?? "text"}
                   placeholder={field.placeholder ?? `Enter ${field.label}`}
                   value={formData[field.key] ?? ""}
-                  onChange={(e) => handleChange(field.key, e.target.value.toString())}
+                  onChange={(e) =>
+                    handleChange(field.key, e.target.value.toString())
+                  }
                   className="description-text"
                 />
               )}

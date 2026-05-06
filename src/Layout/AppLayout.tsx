@@ -156,7 +156,6 @@ export default function AppLayout() {
 
   const stored = localStorage.getItem("theme");
 
-
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-primary ">
@@ -305,8 +304,7 @@ export default function AppLayout() {
         <div className="flex-1">
           <SidebarTrigger />
           <div className="px-10">
-
-          <Outlet />
+            <Outlet />
           </div>
         </div>
       </div>

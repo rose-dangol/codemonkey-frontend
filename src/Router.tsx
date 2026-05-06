@@ -8,7 +8,6 @@ import Category from "./pages/RenderPages/Category";
 import Brands from "./pages/RenderPages/Brands";
 import Product from "./pages/RenderPages/Product";
 
-
 const Router = () => {
   return (
     <Routes>

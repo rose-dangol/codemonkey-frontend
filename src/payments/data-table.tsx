@@ -102,8 +102,7 @@ export function DataTable<TData extends { id: string }>({
       enableHiding: false,
     });
 
-   
-    return [...cols, ...fields, ];
+    return [...cols, ...fields];
   }, [fields, enableRowSelection]);
 
   const table = useReactTable({
@@ -329,7 +328,17 @@ export function DataTable<TData extends { id: string }>({
                 <DropdownMenuItem className="text-sm rounded-lg px-2 py-1.5 cursor-pointer text-slate-600 hover:bg-slate-50">
                   Export Selected
                 </DropdownMenuItem>
-                <DropdownMenuItem className="text-sm rounded-lg px-2 py-1.5 cursor-pointer text-red-600 hover:bg-red-50 focus:bg-red-50 focus:text-red-600" onClick={() => { onDelete && onDelete(table.getFilteredSelectedRowModel().rows.map((row) => row.original.id)) }}>
+                <DropdownMenuItem
+                  className="text-sm rounded-lg px-2 py-1.5 cursor-pointer text-red-600 hover:bg-red-50 focus:bg-red-50 focus:text-red-600"
+                  onClick={() => {
+                    onDelete &&
+                      onDelete(
+                        table
+                          .getFilteredSelectedRowModel()
+                          .rows.map((row) => row.original.id),
+                      );
+                  }}
+                >
                   Delete Selected
                 </DropdownMenuItem>
               </DropdownMenuContent>
