@@ -16,7 +16,7 @@ import { CloudCog, SquarePen } from "lucide-react";
 import type { Brands } from "@/TypeDefinitions/Brands";
 import { BrandService } from "@/services/OrderManagement/BrandService";
 import { ProductService } from "@/services/OrderManagement/ProductService";
-
+import { GetModal } from "@/Layout/GetModal";
 
 const Brands = () => {
   const [open, setOpen] = useState(false);
@@ -24,6 +24,8 @@ const Brands = () => {
   const [selectedBrand, setSelectedBrand] = useState<UpdateBrandDto | null>(
     null,
   );
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [productOpen, setProductOpen] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -32,10 +34,10 @@ const Brands = () => {
     queryFn: () => BrandService.getAll(),
   });
 
-  const {data: allProducts} = useQuery({
+  const { data: allProducts } = useQuery({
     queryKey: ["allProducts"],
     queryFn: () => ProductService.getAll(),
-  })
+  });
 
   const mutation = useMutation({
     mutationFn: (data: UpdateBrandDto) => BrandService.update(data.id, data),
@@ -55,7 +57,7 @@ const Brands = () => {
 
   const handleUpdate = (updatedData: Partial<UpdateBrandDto>) => {
     if (!selectedBrand) return;
-    console.log("called")
+    console.log("called");
     mutation.mutate({
       ...updatedData,
       id: selectedBrand.id,
@@ -94,19 +96,27 @@ const Brands = () => {
 
         return (
           <div className="flex flex-wrap gap-1">
-
-            {products .filter((p: any) => p.isHidden).slice(0, 3).map((p: any, i: number) => (
-              <span
-                key={i}
-                className="px-2 py-1 text-xs bg-gray-100 border rounded-md"
-              >
-                {p.productName}
-              </span>
-            ))}
+            {products
+              .filter((p: any) => p.isHidden)
+              .slice(0, 3)
+              .map((p: any, i: number) => (
+                <span
+                  key={i}
+                  className="px-2 py-1  sub-text bg-primary  rounded-md"
+                >
+                  {p.productName}
+                </span>
+              ))}
 
             {products.length > 3 && (
-              <span className="px-2 py-1 text-xs bg-gray-200 rounded-md">
-                +{products.length - 3}
+              <span
+                className="px-2 py-1  sub-text bg-primary rounded-md cursor-pointer action-hover"
+                onClick={() => {
+                  setProductOpen(true);
+                  setSelectedId(row.original?.id);
+                }}
+              >
+                +{products.length - 3} Read More
               </span>
             )}
             {/* {products?.slice(0, 3).map((p: any, i: number) => {
@@ -152,12 +162,12 @@ const Brands = () => {
         setOpenAdd={setOpenAdd}
         title={"Brand"}
       />
-      <UpdateModal
+      <UpdateModal<UpdateBrandDto>
         open={open}
         setOpen={setOpen}
         title="Update Brand"
         description="Update Brand details"
-        fields={updateBrandFields(brandData, selectedBrand?.id,allProducts)}
+        fields={updateBrandFields(brandData, selectedBrand?.id, allProducts)}
         initialData={selectedBrand ?? {}} // prefill form
         allItems={brandData}
         onUpdate={(updatedData) => {
@@ -165,7 +175,7 @@ const Brands = () => {
           setOpen(false);
         }}
       />
-      <UpdateModal
+      <UpdateModal<UpdateBrandDto>
         open={openAdd}
         setOpen={setOpenAdd}
         title="Add Brand"
@@ -175,6 +185,15 @@ const Brands = () => {
           handleAdd(updatedData);
           setOpenAdd(false);
         }}
+      />
+
+      <GetModal
+        open={productOpen}
+        onOpenChange={setProductOpen}
+        id={selectedId}
+        endpoint={"brand/getBrand/"+selectedId}
+        title="Product Details"
+  
       />
     </div>
   );

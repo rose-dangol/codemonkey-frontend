@@ -25,10 +25,10 @@ export const ProductService = {
 
     update: async (id: string, data: UpdateBrandDto) => {
         try {
-            const res = await api.put(`brand/updateBrand/${id}`, data);
+            const res = await api.put(`product/updateProduct/${id}`, data);
             return res.data;
         } catch (error: any) {
-            toast.error(error.response?.data?.message || "Failed to update brand");
+            toast.error(error.response?.data?.message || "Failed to update product");
         }
     },
 

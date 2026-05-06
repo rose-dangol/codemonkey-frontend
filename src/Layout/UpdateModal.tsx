@@ -11,22 +11,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DialogClose } from "@radix-ui/react-dialog";
 import { useState, useEffect } from "react";
-import type {
-  UpdateCategoryDto,
-  UpdateModalProps,
-} from "@/TypeDefinitions/ModalType";
+import type { UpdateModalProps } from "@/TypeDefinitions/ModalType";
 import Select from "react-select";
 import { TreeDropdown } from "@/components/TreeDropdown";
 
-export function UpdateModal(props: UpdateModalProps<UpdateCategoryDto>) {
-  const [formData, setFormData] = useState<Record<string, any>>({});
-
+export function UpdateModal<T extends Record<string, any>>(
+  props: UpdateModalProps<T>,
+) {
+  const [formData, setFormData] = useState<Partial<T>>({});
   useEffect(() => {
     if (props.open) {
       setFormData(props.initialData ?? {});
     }
   }, [props.open, props.initialData]);
-
   const handleChange = (key: string, value: string | number) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
   };

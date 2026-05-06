@@ -12,6 +12,7 @@ import {
   updateProductFields,
   type UpdateBrandDto,
   type UpdateCategoryDto,
+  type UpdateProductDto,
 } from "@/TypeDefinitions/ModalType";
 import { CloudCog, SquarePen } from "lucide-react";
 import type { Brands } from "@/TypeDefinitions/Brands";
@@ -22,7 +23,7 @@ import { ProductService } from "@/services/OrderManagement/ProductService";
 const Product = () => {
   const [open, setOpen] = useState(false);
   const [openAdd, setOpenAdd] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<UpdateBrandDto | null>(
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(
     null,
   );
 
@@ -44,7 +45,7 @@ const Product = () => {
   });
 
   const mutation = useMutation({
-    mutationFn: (data: UpdateBrandDto) => BrandService.update(data.id, data),
+    mutationFn: (data: UpdateProductDto) => ProductService.update(data.id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       // toast.success("Category updated successfully");
@@ -52,20 +53,19 @@ const Product = () => {
   });
 
   const addMutation = useMutation({
-    mutationFn: (data: UpdateBrandDto) => ProductService.create(data),
+    mutationFn: (data: UpdateProductDto) => ProductService.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       // toast.success("Category updated successfully");
     },
   });
 
-  const handleUpdate = (updatedData: Partial<UpdateBrandDto>) => {
+  const handleUpdate = (updatedData: Partial<UpdateProductDto>) => {
     if (!selectedProduct) return;
-    console.log("called");
     mutation.mutate({
       ...updatedData,
       id: selectedProduct.id,
-    });
+    } as UpdateProductDto);
   };
 
   const handleDelete = async (id: string[]) => {
@@ -74,8 +74,8 @@ const Product = () => {
     queryClient.invalidateQueries({ queryKey: ["products"] });
   };
 
-  const handleAdd = (data: Partial<UpdateBrandDto>) => {
-    addMutation.mutate(data as UpdateBrandDto);
+  const handleAdd = (data: Partial<UpdateProductDto>) => {
+    addMutation.mutate(data as UpdateProductDto);
   };
   const [productData, setProductData] = useState<Product[]>([]);
 
@@ -144,7 +144,7 @@ const Product = () => {
         setOpenAdd={setOpenAdd}
         title={"Product"}
       />
-      <UpdateModal
+      <UpdateModal<UpdateProductDto>
         open={open}
         setOpen={setOpen}
         title="Update Product"
@@ -154,14 +154,22 @@ const Product = () => {
           productCategory,
           selectedProduct?.id,
         )}
-        initialData={selectedProduct ?? {}}
+        initialData={
+          selectedProduct
+            ? {
+                ...selectedProduct,
+                productCategoryId: selectedProduct.productCategory?.id || "",
+                productBrandId: selectedProduct.brand?.id || "",
+              }
+            : {}
+        }
         allItems={productCategory}
         onUpdate={(updatedData) => {
           handleUpdate(updatedData);
           setOpen(false);
         }}
       />
-      <UpdateModal
+      <UpdateModal<UpdateProductDto>
         open={openAdd}
         setOpen={setOpenAdd}
         title="Add Product"

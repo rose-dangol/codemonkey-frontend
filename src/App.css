@@ -41,3 +41,23 @@
 .state-color-text {
   color: var(--state--color);
 }
+
+
+/*********************************** THIN SCROLLBAR *************************************/
+
+.thin-scrollbar::-webkit-scrollbar {
+  width: 4px; /* 👈 thinner */
+}
+
+.thin-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.5); /* gray-400 */
+  border-radius: 9999px;
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(107, 114, 128, 0.7); /* darker on hover */
+}

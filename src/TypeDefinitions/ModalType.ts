@@ -10,6 +10,15 @@ export type modalType = {
   saveLocalStorage?: (data: any) => void;
 };
 
+export type GetModalProps<T> = {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  id?: string | number | null;
+  endpoint: string;
+  title?: string;
+};
+
+
 export type UpdateModalProps<T = any, O = any> = {
   open: boolean;
   setOpen: (open: boolean) => void;
@@ -27,10 +36,12 @@ export type UpdateCategoryDto = {
   categoryParentId?: string | null;
   categoryImage?: string;
   categoryDesc?: string;
+  brand?: Brands;
+  productCategory?: Category;
 };
 
-type UpdateField<T = any> = {
-  key: keyof T;
+type UpdateField<T> = {
+  key: Extract<keyof T, string>;
   label: string;
   placeholder?: string;
   type?: "text" | "number" | "email" | "select" | "multi-select" | "dropdown"|"select(parent)";

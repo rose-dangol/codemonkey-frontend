@@ -2,9 +2,9 @@ export type Product = {
   id: string;
   productName: string;
   quantity: number;
-  productImage?: string | null;
-  categoryId?: string | null;
-  brandId?: string | null;
+  productImage?: string;
+  productCategoryId?: string | null;
+  productBrandId?: string | null;
   isHidden?: boolean | null;
   productCategory?: {
     id: string;
