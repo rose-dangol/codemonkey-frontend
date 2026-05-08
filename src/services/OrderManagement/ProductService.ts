@@ -1,5 +1,5 @@
 import api from "@/api/ApiUrl";
-import type { UpdateBrandDto } from "@/TypeDefinitions/ModalType";
+import type {  UpdateProductDto } from "@/TypeDefinitions/ModalType";
 import { toast } from "react-toastify";
 
 export const ProductService = {
@@ -13,7 +13,7 @@ export const ProductService = {
         return res.data;
     },
 
-    create: async (data: UpdateBrandDto) => {
+    create: async (data: UpdateProductDto) => {
         try {
             const res = await api.post(`product/addProduct`, data);
             return res.data;
@@ -23,7 +23,7 @@ export const ProductService = {
         }
     },
 
-    update: async (id: string, data: UpdateBrandDto) => {
+    update: async (id: string, data: UpdateProductDto) => {
         try {
             const res = await api.put(`product/updateProduct/${id}`, data);
             return res.data;

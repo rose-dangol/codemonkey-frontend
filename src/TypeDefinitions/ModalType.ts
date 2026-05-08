@@ -1,4 +1,3 @@
-import { CloudCog } from "lucide-react";
 import type { Brands } from "./Brands";
 import type { Category } from "./Category";
 import type { Product } from "./Product";
@@ -139,6 +138,7 @@ export type UpdateProductDto = {
   productCategoryId?: string;
   productBrandId?: string;
   productImage?: string;
+  serviceId: string;
 };
 
 export const updateProductFields = (

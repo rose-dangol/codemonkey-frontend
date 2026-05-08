@@ -59,6 +59,11 @@ export default function AppLayout() {
           url: "/ordermgmt/products",
           icon: TrophyIcon,
         },
+        {
+          title: "Product Variant",
+          url: "/ordermgmt/productvariant",
+          icon: TrophyIcon,
+        },
       ],
     },
     {
