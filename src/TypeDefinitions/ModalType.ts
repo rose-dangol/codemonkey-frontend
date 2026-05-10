@@ -1,6 +1,8 @@
+import type { Attributes, AttributeDefinitionType } from "./AttributeDefinitions";
 import type { Brands } from "./Brands";
 import type { Category } from "./Category";
 import type { Product } from "./Product";
+import type { ProductVariantType } from "./ProductVariant";
 
 export type modalType = {
   open: boolean;
@@ -16,7 +18,6 @@ export type GetModalProps<T> = {
   endpoint: string;
   title?: string;
 };
-
 
 export type UpdateModalProps<T = any, O = any> = {
   open: boolean;
@@ -43,8 +44,17 @@ type UpdateField<T> = {
   key: Extract<keyof T, string>;
   label: string;
   placeholder?: string;
-  type?: "text" | "number" | "email" | "select" | "multi-select" | "dropdown"|"select(parent)";
+  type?:
+    | "text"
+    | "number"
+    | "email"
+    | "select"
+    | "multi-select"
+    | "dropdown"
+    | "select(parent)"
+    | "tabs";
   options?: { label: string; value: string; children?: any[] }[];
+  tabDefinitions?: { id: string; name: string }[];
   cell?: (
     row: { original: T },
     allItems?: UpdateCategoryDto[],
@@ -55,35 +65,37 @@ export const updateCategoryFields = (
   allItems?: Category[],
   currentId?: string,
 ): UpdateField<UpdateCategoryDto>[] => [
-    {
-      key: "categoryName",
-      label: "Category Name",
-      placeholder: "Enter category name",
-      type: "text",
-    },
-    {
-      key: "categoryParentId",
-      label: "Parent Category",
-      placeholder: "Enter parent category",
-      type: "select(parent)",
-      options: allItems?.filter((c) => c.id !== currentId)?.map((c) => ({
+  {
+    key: "categoryName",
+    label: "Category Name",
+    placeholder: "Enter category name",
+    type: "text",
+  },
+  {
+    key: "categoryParentId",
+    label: "Parent Category",
+    placeholder: "Enter parent category",
+    type: "select(parent)",
+    options: allItems
+      ?.filter((c) => c.id !== currentId)
+      ?.map((c) => ({
         label: c.categoryName,
         value: c.id,
       })),
-    },
-    {
-      key: "categoryImage",
-      label: "Category Image",
-      placeholder: "Enter image url",
-      type: "text",
-    },
-    {
-      key: "categoryDesc",
-      label: "Category Description",
-      placeholder: "Enter description",
-      type: "text",
-    },
-  ];
+  },
+  {
+    key: "categoryImage",
+    label: "Category Image",
+    placeholder: "Enter image url",
+    type: "text",
+  },
+  {
+    key: "categoryDesc",
+    label: "Category Description",
+    placeholder: "Enter description",
+    type: "text",
+  },
+];
 
 export type UpdateBrandDto = {
   id: string;
@@ -98,38 +110,37 @@ export const updateBrandFields = (
   currentId?: string,
   allProducts?: Product[],
 ): UpdateField<UpdateBrandDto>[] => [
-    {
-      key: "brandName",
-      label: "Brand Name",
-      placeholder: "Enter brand name",
-      type: "text",
-    },
-    {
-      key: "brandImage",
-      label: "Brand Image",
-      placeholder: "Enter image url",
-      type: "text",
-    },
-    {
-      key: "brandDesc",
-      label: "Brand Description",
-      placeholder: "Enter description",
-      type: "text",
-    },
-    {
-      key: "productId",
-      label: "Products",
-      placeholder: "Enter products",
-      type: "multi-select",
-      options:
-        allProducts?.map((p) => ({
-          label: p.productName,
-          value: p.id,
-          isHidden: p.isHidden,
-        })) ?? [], 
-    },
-  ];
-
+  {
+    key: "brandName",
+    label: "Brand Name",
+    placeholder: "Enter brand name",
+    type: "text",
+  },
+  {
+    key: "brandImage",
+    label: "Brand Image",
+    placeholder: "Enter image url",
+    type: "text",
+  },
+  {
+    key: "brandDesc",
+    label: "Brand Description",
+    placeholder: "Enter description",
+    type: "text",
+  },
+  {
+    key: "productId",
+    label: "Products",
+    placeholder: "Enter products",
+    type: "multi-select",
+    options:
+      allProducts?.map((p) => ({
+        label: p.productName,
+        value: p.id,
+        isHidden: p.isHidden,
+      })) ?? [],
+  },
+];
 
 export type UpdateProductDto = {
   id: string;
@@ -153,7 +164,10 @@ export const updateProductFields = (
       .map((c) => ({
         label: c.categoryName,
         value: c.id,
-        children: c.subCategories && c.subCategories.length > 0 ? buildCategoryOptions(c.subCategories) : undefined,
+        children:
+          c.subCategories && c.subCategories.length > 0
+            ? buildCategoryOptions(c.subCategories)
+            : undefined,
       }));
   };
 
@@ -197,6 +211,65 @@ export const updateProductFields = (
       label: "Product Image",
       placeholder: "Enter image url",
       type: "text",
+    },
+  ];
+};
+
+export const updateProductVariantFields = (
+  product?: Product[],
+  attributes?: Attributes[],
+  attributeDefinitions?: AttributeDefinitionType[],
+): UpdateField<ProductVariantType>[] => {
+  const buildProductOptions = (pro?: Product[]): any[] => {
+    if (!pro) return [];
+    return pro.map((p) => ({
+      label: p.productName,
+      value: p.id,
+    }));
+  };
+
+  const buildTabDefinitions = (
+    attrDefs?: AttributeDefinitionType[],
+  ): { id: string; name: string }[] => {
+    if (!attrDefs) return [];
+    return attrDefs.map((ad) => ({
+      id: ad.serviceTypeId,
+      name: ad.name,
+    }));
+  };
+
+  return [
+    {
+      key: "sku",
+      label: "Sku",
+      placeholder: "Enter sku",
+      type: "text",
+    },
+    {
+      key: "price",
+      label: "Price",
+      placeholder: "Enter price",
+      type: "number",
+    },
+    {
+      key: "stock",
+      label: "Stock",
+      placeholder: "Enter stock",
+      type: "number",
+    },
+    {
+      key: "productId",
+      label: "Product",
+      placeholder: "Enter product",
+      type: "select(parent)",
+      options: buildProductOptions(product),
+    },
+    {
+      key: "attributes",
+      label: "Attributes",
+      placeholder: "Enter attributes",
+      type: "tabs",
+      tabDefinitions: buildTabDefinitions(attributeDefinitions),
     },
   ];
 };

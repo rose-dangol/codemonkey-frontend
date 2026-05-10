@@ -14,6 +14,7 @@ import { useState, useEffect } from "react";
 import type { UpdateModalProps } from "@/TypeDefinitions/ModalType";
 import Select from "react-select";
 import { TreeDropdown } from "@/components/TreeDropdown";
+import DynamicVariantTabs from "@/components/DynamicTabs";
 
 export function UpdateModal<T extends Record<string, any>>(
   props: UpdateModalProps<T>,
@@ -24,7 +25,7 @@ export function UpdateModal<T extends Record<string, any>>(
       setFormData(props.initialData ?? {});
     }
   }, [props.open, props.initialData]);
-  const handleChange = (key: string, value: string | number) => {
+  const handleChange = (key: string, value: any) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
   };
 
@@ -48,6 +49,14 @@ export function UpdateModal<T extends Record<string, any>>(
         value={formData[field.key] ?? ""}
         onChange={(val) => handleChange(field.key, val)}
         allowParentSelect
+      />
+    ),
+
+    tabs: (field) => (
+      <DynamicVariantTabs
+        attributeDefinitions={field.tabDefinitions ?? []}
+        value={formData[field.key] as any}
+        onChange={(data) => handleChange(field.key, data as any)}
       />
     ),
 

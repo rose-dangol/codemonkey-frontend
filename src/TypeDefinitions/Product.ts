@@ -1,4 +1,4 @@
-import type { ProductVariant } from "./ProductVariant";
+import type { ProductVariantType } from "./ProductVariant";
 
 export type Product = {
   id: string;
@@ -17,5 +17,12 @@ export type Product = {
     id: string;
     brandName: string;
   } | null;
-  variants?: ProductVariant[];
+  variants?: ProductVariantType[];
+  attributes?: {
+    id: string;
+    attributeId: string;
+    key: string;
+    value: string;
+    serviceTypeId: string;
+  }[];
 };

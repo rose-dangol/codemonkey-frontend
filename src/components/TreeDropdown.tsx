@@ -117,6 +117,7 @@ export function TreeDropdown({
   placeholder?: string;
   allowParentSelect?: boolean;
 }) {
+  console.log("options : ", options);
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
 

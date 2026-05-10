@@ -1,4 +1,4 @@
-export type ProductVariant = {
+export type ProductVariantType = {
   id: string;
   productId: string;
   sku: string;
