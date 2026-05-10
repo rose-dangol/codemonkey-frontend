@@ -7,6 +7,7 @@ import AppLayout from "./Layout/AppLayout";
 import Category from "./pages/RenderPages/Category";
 import Brands from "./pages/RenderPages/Brands";
 import Product from "./pages/RenderPages/Product";
+import ProductVariant from "./pages/RenderPages/ProductVariant";
 
 const Router = () => {
   return (
@@ -18,6 +19,7 @@ const Router = () => {
         <Route path="/ordermgmt/category" element={<Category />} />
         <Route path="/ordermgmt/brands" element={<Brands />} />
         <Route path="/ordermgmt/products" element={<Product />} />
+        <Route path="/ordermgmt/productvariant" element={<ProductVariant />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>

@@ -8,10 +8,6 @@ export const BrandService = {
     return res.data;
   },
 
-  getById: async (id: string) => {
-    const res = await api.get(`brand/getBrand/${id}`);
-    return res.data;
-  },
 
   create: async (data: UpdateBrandDto) => {
     try {

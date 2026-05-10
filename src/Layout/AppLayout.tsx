@@ -59,6 +59,11 @@ export default function AppLayout() {
           url: "/ordermgmt/products",
           icon: TrophyIcon,
         },
+        {
+          title: "Product Variant",
+          url: "/ordermgmt/productvariant",
+          icon: TrophyIcon,
+        },
       ],
     },
     {
@@ -124,6 +129,16 @@ export default function AppLayout() {
       subText: "#EBD8D0",
       backgroundSecondary: "#FFFBFa",
       backgroundPrimary: "#FEFEFF",
+    },
+    {
+      title: "Dark Theme",
+      heading: "#FFFFFF",
+      description: "#C7C7C7",
+      subText: "#8A8A8A",
+      backgroundPrimary: "#09090b",
+      backgroundSecondary: "#111114",
+      Action: "#FFD35A",
+      State: "#19A7A5",
     },
   ];
 

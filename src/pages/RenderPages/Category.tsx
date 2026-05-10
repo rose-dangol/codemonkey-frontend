@@ -139,7 +139,7 @@ const Category = () => {
         setOpenAdd={setOpenAdd}
         title="Category"
       />
-      <UpdateModal
+      <UpdateModal<UpdateCategoryDto>
         open={open}
         setOpen={setOpen}
         title="Update Category"
@@ -152,7 +152,7 @@ const Category = () => {
           setOpen(false);
         }}
       />
-      <UpdateModal
+      <UpdateModal<UpdateCategoryDto>
         open={openAdd}
         setOpen={setOpenAdd}
         title="Add Category"

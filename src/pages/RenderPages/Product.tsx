@@ -3,18 +3,13 @@ import DemoPage from "@/payments/page";
 import { CategoryService } from "@/services/OrderManagement/Category";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Category } from "@/TypeDefinitions/Category";
 import "@/App.css";
 import { UpdateModal } from "@/Layout/UpdateModal";
 import {
-  updateBrandFields,
-  updateCategoryFields,
   updateProductFields,
-  type UpdateBrandDto,
-  type UpdateCategoryDto,
+  type UpdateProductDto,
 } from "@/TypeDefinitions/ModalType";
-import { CloudCog, SquarePen } from "lucide-react";
-import type { Brands } from "@/TypeDefinitions/Brands";
+import { SquarePen } from "lucide-react";
 import { BrandService } from "@/services/OrderManagement/BrandService";
 import type { Product } from "@/TypeDefinitions/Product";
 import { ProductService } from "@/services/OrderManagement/ProductService";
@@ -22,10 +17,11 @@ import { ProductService } from "@/services/OrderManagement/ProductService";
 const Product = () => {
   const [open, setOpen] = useState(false);
   const [openAdd, setOpenAdd] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<UpdateBrandDto | null>(
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(
     null,
   );
 
+  const queryClient = useQueryClient();
   const queryClient = useQueryClient();
 
   const { data: products } = useQuery({
@@ -33,8 +29,18 @@ const Product = () => {
     queryFn: () => ProductService.getAll(),
   });
 
+  const { data: brands } = useQuery({
+    queryKey: ["payments"],
+    queryFn: () => BrandService.getAll(),
+  });
+
+  const { data: productCategory } = useQuery({
+    queryKey: ["product-category"],
+    queryFn: () => CategoryService.getAll(),
+  });
+
   const mutation = useMutation({
-    mutationFn: (data: UpdateBrandDto) => BrandService.update(data.id, data),
+    mutationFn: (data: UpdateProductDto) => ProductService.update(data.id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       // toast.success("Category updated successfully");
@@ -42,20 +48,19 @@ const Product = () => {
   });
 
   const addMutation = useMutation({
-    mutationFn: (data: UpdateBrandDto) => BrandService.create(data),
+    mutationFn: (data: UpdateProductDto) => ProductService.create({...data, serviceId:"3a014030-1f20-47b9-8848-04c4f8c0be54"}),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       // toast.success("Category updated successfully");
     },
   });
 
-  const handleUpdate = (updatedData: Partial<UpdateBrandDto>) => {
+  const handleUpdate = (updatedData: Partial<UpdateProductDto>) => {
     if (!selectedProduct) return;
-    console.log("called");
     mutation.mutate({
       ...updatedData,
       id: selectedProduct.id,
-    });
+    } as UpdateProductDto);
   };
 
   const handleDelete = async (id: string[]) => {
@@ -63,12 +68,26 @@ const Product = () => {
     await CategoryService.delete(id);
     queryClient.invalidateQueries({ queryKey: ["products"] });
   };
+  const handleDelete = async (id: string[]) => {
+    console.log("selectedId:", id);
+    await CategoryService.delete(id);
+    queryClient.invalidateQueries({ queryKey: ["products"] });
+  };
 
-  const handleAdd = (data: Partial<UpdateBrandDto>) => {
-    addMutation.mutate(data as UpdateBrandDto);
+  const handleAdd = (data: Partial<UpdateProductDto>) => {
+    addMutation.mutate(data as UpdateProductDto);
   };
   const [productData, setProductData] = useState<Product[]>([]);
 
+  const productColumns: ColumnDef<Product>[] = [
+    {
+      accessorKey: "productImage",
+      header: "Product Image",
+    },
+    {
+      accessorKey: "productName",
+      header: "Product Name",
+    },
   const productColumns: ColumnDef<Product>[] = [
     {
       accessorKey: "productImage",
@@ -132,27 +151,39 @@ const Product = () => {
         onDelete={handleDelete}
         openAdd={openAdd}
         setOpenAdd={setOpenAdd}
-        title={"Brand"}
+        title={"Product"}
       />
-      <UpdateModal
+      <UpdateModal<UpdateProductDto>
         open={open}
         setOpen={setOpen}
-        title="Update Brand"
-        description="Update Brand details"
-        fields={updateProductFields(productData, selectedProduct?.id)}
-        initialData={selectedProduct ?? {}} // prefill form
-        allItems={productData}
+        title="Update Product"
+        description="Update Product details"
+        fields={updateProductFields(
+          brands,
+          productCategory,
+          selectedProduct?.id,
+        )}
+        initialData={
+          selectedProduct
+            ? {
+                ...selectedProduct,
+                productCategoryId: selectedProduct.productCategory?.id || "",
+                productBrandId: selectedProduct.brand?.id || "",
+              }
+            : {}
+        }
+        allItems={productCategory}
         onUpdate={(updatedData) => {
           handleUpdate(updatedData);
           setOpen(false);
         }}
       />
-      <UpdateModal
+      <UpdateModal<UpdateProductDto>
         open={openAdd}
         setOpen={setOpenAdd}
-        title="Add Brand"
-        description="Add new Brand"
-        fields={updateProductFields(productData)}
+        title="Add Product"
+        description="Add new Product"
+        fields={updateProductFields(brands, productCategory)}
         onUpdate={(updatedData) => {
           handleAdd(updatedData);
           setOpenAdd(false);

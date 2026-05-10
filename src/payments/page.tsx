@@ -30,7 +30,7 @@ export default function DemoPage({
         <p className="text-sm px-2">Add {title} </p>
       </button>
       <DataTable
-        id={data.map((item) => item.id)}
+        id={data?.map((item) => item?.id)}
         fields={columns ?? defaultColumns}
         data={data ?? []}
         onUpdate={onUpdate}

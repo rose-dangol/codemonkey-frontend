@@ -1,10 +1,12 @@
+import type { ProductVariantType } from "./ProductVariant";
+
 export type Product = {
   id: string;
   productName: string;
   quantity: number;
-  productImage?: string | null;
-  categoryId?: string | null;
-  brandId?: string | null;
+  productImage?: string;
+  productCategoryId?: string | null;
+  productBrandId?: string | null;
   isHidden?: boolean | null;
   productCategory?: {
     id: string;
@@ -15,4 +17,12 @@ export type Product = {
     id: string;
     brandName: string;
   } | null;
+  variants?: ProductVariantType[];
+  attributes?: {
+    id: string;
+    attributeId: string;
+    key: string;
+    value: string;
+    serviceTypeId: string;
+  }[];
 };
