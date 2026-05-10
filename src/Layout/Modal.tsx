@@ -13,7 +13,6 @@ import { useState } from "react";
 
 export function Modal(props: modalType) {
   const [selectedData, setSelectedData] = useState<any>(null);
-  
 
   const handleSubmit = (e: any, selectedData: any) => {
     e.preventDefault();
@@ -29,8 +28,12 @@ export function Modal(props: modalType) {
     <Dialog open={props.open} onOpenChange={props.setOpen}>
       <DialogContent className="bg-primary border-0">
         <DialogHeader>
-          <DialogTitle className="heading-font">Select your appropriate theme</DialogTitle>
-          <DialogDescription className="description-text">This action cannot be undone.</DialogDescription>
+          <DialogTitle className="heading-font">
+            Select your appropriate theme
+          </DialogTitle>
+          <DialogDescription className="description-text">
+            This action cannot be undone.
+          </DialogDescription>
         </DialogHeader>
         <div className="space-y-2">
           {props.sentObject.map((item: any, index: number) => (

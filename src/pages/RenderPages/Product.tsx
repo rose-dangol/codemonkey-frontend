@@ -22,6 +22,7 @@ const Product = () => {
   );
 
   const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
 
   const { data: products } = useQuery({
     queryKey: ["products"],
@@ -67,12 +68,26 @@ const Product = () => {
     await CategoryService.delete(id);
     queryClient.invalidateQueries({ queryKey: ["products"] });
   };
+  const handleDelete = async (id: string[]) => {
+    console.log("selectedId:", id);
+    await CategoryService.delete(id);
+    queryClient.invalidateQueries({ queryKey: ["products"] });
+  };
 
   const handleAdd = (data: Partial<UpdateProductDto>) => {
     addMutation.mutate(data as UpdateProductDto);
   };
   const [productData, setProductData] = useState<Product[]>([]);
 
+  const productColumns: ColumnDef<Product>[] = [
+    {
+      accessorKey: "productImage",
+      header: "Product Image",
+    },
+    {
+      accessorKey: "productName",
+      header: "Product Name",
+    },
   const productColumns: ColumnDef<Product>[] = [
     {
       accessorKey: "productImage",

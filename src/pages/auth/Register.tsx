@@ -3,7 +3,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -34,7 +33,11 @@ const Register = () => {
     }),
     onSubmit: (values) => {
       console.log(values);
-      RegisterUser({username:values.username,passwordHash:values.passwordHash,file:UserLogo});
+      RegisterUser({
+        username: values.username,
+        passwordHash: values.passwordHash,
+        file: UserLogo,
+      });
     },
   });
   return (

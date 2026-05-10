@@ -5,4 +5,4 @@ export type Category = {
   categoryImage: string;
   categoryDesc: string;
   subCategories: Category[]; // recursive!
-}
+};
