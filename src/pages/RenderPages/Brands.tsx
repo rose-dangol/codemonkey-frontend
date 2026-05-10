@@ -35,7 +35,6 @@ const Brands = () => {
   });
 
   const { data: allProducts } = useQuery({
-  const { data: allProducts } = useQuery({
     queryKey: ["allProducts"],
     queryFn: () => ProductService.getAll(),
   });
