@@ -17,11 +17,8 @@ import { ProductService } from "@/services/OrderManagement/ProductService";
 const Product = () => {
   const [open, setOpen] = useState(false);
   const [openAdd, setOpenAdd] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(
-    null,
-  );
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
-  const queryClient = useQueryClient();
   const queryClient = useQueryClient();
 
   const { data: products } = useQuery({
@@ -40,7 +37,8 @@ const Product = () => {
   });
 
   const mutation = useMutation({
-    mutationFn: (data: UpdateProductDto) => ProductService.update(data.id, data),
+    mutationFn: (data: UpdateProductDto) =>
+      ProductService.update(data.id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       // toast.success("Category updated successfully");
@@ -48,7 +46,11 @@ const Product = () => {
   });
 
   const addMutation = useMutation({
-    mutationFn: (data: UpdateProductDto) => ProductService.create({...data, serviceId:"3a014030-1f20-47b9-8848-04c4f8c0be54"}),
+    mutationFn: (data: UpdateProductDto) =>
+      ProductService.create({
+        ...data,
+        serviceId: "3a014030-1f20-47b9-8848-04c4f8c0be54",
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       // toast.success("Category updated successfully");
@@ -68,26 +70,12 @@ const Product = () => {
     await CategoryService.delete(id);
     queryClient.invalidateQueries({ queryKey: ["products"] });
   };
-  const handleDelete = async (id: string[]) => {
-    console.log("selectedId:", id);
-    await CategoryService.delete(id);
-    queryClient.invalidateQueries({ queryKey: ["products"] });
-  };
 
   const handleAdd = (data: Partial<UpdateProductDto>) => {
     addMutation.mutate(data as UpdateProductDto);
   };
   const [productData, setProductData] = useState<Product[]>([]);
 
-  const productColumns: ColumnDef<Product>[] = [
-    {
-      accessorKey: "productImage",
-      header: "Product Image",
-    },
-    {
-      accessorKey: "productName",
-      header: "Product Name",
-    },
   const productColumns: ColumnDef<Product>[] = [
     {
       accessorKey: "productImage",
