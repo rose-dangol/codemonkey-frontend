@@ -3,6 +3,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -15,9 +16,13 @@ import { useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { RegisterUser } from "@/services/Authenticate";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Register = () => {
   const [UserLogo, setUserLogo] = useState<File | null>(null);
+  const navigate = useNavigate();
+  const { onLoginSuccess } = useAuth();
   const formik = useFormik({
     initialValues: {
       username: "",
@@ -31,13 +36,14 @@ const Register = () => {
         .oneOf([Yup.ref("passwordHash")], "Passwords must match")
         .required("Confirm Password is required"),
     }),
-    onSubmit: (values) => {
-      console.log(values);
-      RegisterUser({
+    onSubmit: async (values) => {
+      const data = await RegisterUser({
         username: values.username,
         passwordHash: values.passwordHash,
         file: UserLogo,
       });
+      onLoginSuccess(data.accessToken);
+      navigate("/login");
     },
   });
   return (
@@ -51,7 +57,10 @@ const Register = () => {
         </CardHeader>
 
         <CardContent>
-          <form className="flex flex-col gap-6" onSubmit={formik.handleSubmit}>
+          <form
+            className="flex flex-col gap-6 text-[#eeeeee]"
+            onSubmit={formik.handleSubmit}
+          >
             {/* Username */}
             <div className="grid gap-2 relative w-16 h-16 mb-3">
               {/* Avatar */}
@@ -148,19 +157,26 @@ const Register = () => {
                   </p>
                 )}
             </div>
-
-            <Button type="submit" className="w-full text-black">
-              Register
-            </Button>
-            <Button variant="outline" className="w-full">
-              Register with Google
-            </Button>
+            <CardFooter className="flex-col gap-1.5">
+              <Button
+                type="submit"
+                className="w-full text-black cursor-pointer"
+              >
+                Register
+              </Button>
+              <span>
+                Already Have an Account?
+                <Link
+                  to={"/login"}
+                  className="hover:text-blue-300 cursor-pointer"
+                >
+                  {" "}
+                  Log In
+                </Link>
+              </span>
+            </CardFooter>
           </form>
         </CardContent>
-
-        {/* <CardFooter className="flex flex-col gap-2">
-        
-        </CardFooter> */}
       </Card>
     </div>
   );

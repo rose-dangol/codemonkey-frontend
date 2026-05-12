@@ -1,4 +1,5 @@
 import api from "@/api/ApiUrl";
+import { tokenStore } from "@/lib/tokenStore";
 
 export interface User {
   id: string;
@@ -13,18 +14,24 @@ export const RegisterUser = async (payload: {
   passwordHash: string;
   file: File | null;
 }) => {
-  const response = await api.post("auth/register", payload);
-  const user: User = response.data;
-  if (payload.file) {
+  const { file, ...registerPayload } = payload;
+  const response = await api.post("auth/register", registerPayload);
+  const { accessToken, id } = response.data;
+
+  tokenStore.set(accessToken);
+
+  if (file) {
     const formData = new FormData();
-    formData.append("file", payload.file);
-
-    await api.post(`users/${user.id}/cover-picture`, formData, {
-      headers: {
-        Authorization: `Bearer ${user.accessToken}`,
-      },
-    });
+    formData.append("file", file);
+    await api.post(`users/${id}/cover-picture`, formData);
   }
+  return response.data;
+};
 
-  return user;
+export const LoginUser = async (payload: {
+  username: string;
+  password: string;
+}) => {
+  const response = await api.post("auth/login/", payload);
+  return response.data;
 };

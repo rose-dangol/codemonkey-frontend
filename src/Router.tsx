@@ -8,19 +8,27 @@ import Category from "./pages/RenderPages/Category";
 import Brands from "./pages/RenderPages/Brands";
 import Product from "./pages/RenderPages/Product";
 import ProductVariant from "./pages/RenderPages/ProductVariant";
+import ProtectedRoute from "./ProtectedRoute";
+import EmailCheck from "./pages/EmailCheck";
 
 const Router = () => {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      <Route element={<AppLayout />}>
-        <Route path="/home" element={<Homepage />} />
-        <Route path="/ordermgmt/category" element={<Category />} />
-        <Route path="/ordermgmt/brands" element={<Brands />} />
-        <Route path="/ordermgmt/products" element={<Product />} />
-        <Route path="/ordermgmt/productvariant" element={<ProductVariant />} />
-        <Route path="*" element={<NotFound />} />
+      <Route path="/email" element={<EmailCheck />} />
+      <Route element={<ProtectedRoute />}>
+        <Route element={<AppLayout />}>
+          <Route path="/home" element={<Homepage />} />
+          <Route path="/ordermgmt/category" element={<Category />} />
+          <Route path="/ordermgmt/brands" element={<Brands />} />
+          <Route path="/ordermgmt/products" element={<Product />} />
+          <Route
+            path="/ordermgmt/productvariant"
+            element={<ProductVariant />}
+          />
+          <Route path="*" element={<NotFound />} />
+        </Route>
       </Route>
     </Routes>
   );
