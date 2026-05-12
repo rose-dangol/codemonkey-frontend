@@ -83,17 +83,25 @@ const ProductVariant = () => {
 
   const handleUpdate = (updatedData: Partial<ProductVariantType>) => {
     if (!selectedProduct) return;
-    mutation.mutate({
+
+    const normalizedData = {
       ...updatedData,
+      price:
+        updatedData.price !== undefined
+          ? Number(updatedData.price)
+          : updatedData.price,
+    };
+
+    mutation.mutate({
+      ...normalizedData,
       id: selectedProduct.id,
     } as ProductVariantType);
   };
 
-  //   const handleDelete = async (id: string[]) => {
-  //     console.log("selectedId:", id);
-  //     await CategoryService.delete(id);
-  //     queryClient.invalidateQueries({ queryKey: ["products"] });
-  //   };
+  const handleDelete = async (id: string[]) => {
+    await ProductVaraiantService.delete(id);
+    queryClient.invalidateQueries({ queryKey: ["productVariant"] });
+  };
 
   const handleAdd = (data: Partial<ProductVariantType>) => {
     addMutation.mutate(data as ProductVariantType);
@@ -189,7 +197,7 @@ const ProductVariant = () => {
         data={productVariant}
         columns={productVariantColumns}
         // onUpdate={handleUpdate}
-        // onDelete={handleDelete}
+        onDelete={handleDelete}
         openAdd={openAdd}
         setOpenAdd={setOpenAdd}
         title={"Product Variant"}

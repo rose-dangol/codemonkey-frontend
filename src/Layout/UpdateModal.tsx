@@ -22,9 +22,13 @@ export function UpdateModal<T extends Record<string, any>>(
   const [formData, setFormData] = useState<Partial<T>>({});
   useEffect(() => {
     if (props.open) {
-      setFormData(props.initialData ?? {});
+      setFormData((prev) => ({
+        ...props.initialData,
+        ...prev,
+      }));
     }
-  }, [props.open, props.initialData]);
+  }, [props.open]);
+
   const handleChange = (key: string, value: any) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
   };

@@ -1,17 +1,13 @@
-import { useMemo, useEffect, useRef } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useMemo, useEffect, useRef, memo, useCallback } from "react";
+import { useForm, Controller, useWatch } from "react-hook-form";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
 import { Input } from "@/components/ui/input";
-
 import { Checkbox } from "@/components/ui/checkbox";
-
-import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
-
 import { Badge } from "@/components/ui/badge";
-
 import { Card, CardContent } from "@/components/ui/card";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 type AttributeDefinition = {
   id: string;
@@ -38,142 +34,78 @@ export type DynamicTabsProps = {
   onChange?: (data: AttributePayloadItem[]) => void;
 };
 
-export default function DynamicVariantTabs({
-  attributeDefinitions,
-  value,
-  onChange,
-}: DynamicTabsProps) {
-  const defaultValues = useMemo<FormValues>(() => {
-    const attributes: Record<string, AttributeValue[]> = {};
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-    attributeDefinitions.forEach((attr) => {
-      let attrValue = "";
-      let attrDisabled = false;
+/** Resolves a single attribute's initial value from any supported input shape. */
+function resolveInitialEntry(
+  attr: AttributeDefinition,
+  value: DynamicTabsProps["value"],
+): AttributeValue {
+  if (!value) return { value: "", disabled: true };
 
-      if (value) {
-        if (Array.isArray(value)) {
-          // If value is already in payload format AttributePayloadItem[]
-          const item = value.find((v: any) => v.attributeId === attr.id);
-          if (item) {
-            attrValue = item.value;
-          }
-        } else {
-          // If value is a Record from mapVariantToForm
-          const val = (value as any)[attr.name] ?? (value as any)[attr.id];
-          if (Array.isArray(val) && val.length > 0) {
-            attrValue = val[0].value || "";
-            attrDisabled = val[0].disabled || false;
-          } else if (typeof val === "string") {
-            attrValue = val;
-          } else if (typeof val === "object" && val !== null && "value" in val) {
-            attrValue = val.value || "";
-            attrDisabled = val.disabled || false;
-          }
-        }
-      }
-
-      attributes[attr.name] = [
-        {
-          value: attrValue,
-          disabled: attrDisabled,
-        },
-      ];
-    });
-
-    return { attributes };
-  }, [attributeDefinitions, value]);
-
-  const { control, register, watch } = useForm<FormValues>({
-    defaultValues,
-  });
-
-  // Keep onChange in a ref so subscription never re-triggers
-  const onChangeRef = useRef(onChange);
-  onChangeRef.current = onChange;
-
-  const watchedAttributes = watch("attributes");
-
-  // Subscribe to form changes via watch's callback – fires only on actual value changes
-  useEffect(() => {
-    const subscription = watch((formValues) => {
-      if (onChangeRef.current && formValues.attributes) {
-        const attrs = formValues.attributes as Record<string, AttributeValue[]>;
-        const payload: AttributePayloadItem[] = [];
-
-        for (const [name, entries] of Object.entries(attrs)) {
-          const def = attributeDefinitions.find((d) => d.name === name);
-          if (!def) continue;
-          for (const entry of entries) {
-            if (entry.value.trim() !== "" && !entry.disabled) {
-              payload.push({
-                attributeId: def.id,
-                value: entry.value,
-              });
-            }
-          }
-        }
-
-        onChangeRef.current(payload);
-      }
-    });
-    return () => subscription.unsubscribe();
-  }, [watch, attributeDefinitions]);
-
-  /* ------------------------------------------------------------------------ */
-  /*                             TAB COMPLETION                               */
-  /* ------------------------------------------------------------------------ */
-
-  const isTabDisabled = (attributeName: string) => {
-    const values = watchedAttributes?.[attributeName];
-    return Array.isArray(values) ? values.some((item) => item.disabled) : false;
-  };
-
-  if (!attributeDefinitions || attributeDefinitions.length === 0) {
-    return (
-      <p className="text-sm text-muted-foreground">No attributes available.</p>
-    );
+  if (Array.isArray(value)) {
+    const item = (value as any[]).find((v) => v.attributeId === attr.id);
+    return { value: item?.value ?? "", disabled: true };
   }
 
-  console.log("watchedAttributes", watchedAttributes);
+  const raw = (value as any)[attr.name] ?? (value as any)[attr.id];
+
+  if (Array.isArray(raw) && raw.length > 0) {
+    return { value: raw[0].value ?? "", disabled: raw[0].disabled ?? false };
+  }
+  if (typeof raw === "string") return { value: raw, disabled: false };
+  if (raw && typeof raw === "object" && "value" in raw) {
+    return { value: raw.value ?? "", disabled: raw.disabled ?? false };
+  }
+
+  return { value: "", disabled: false };
+}
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+type TabTriggerProps = {
+  attribute: AttributeDefinition;
+  control: any;
+};
+
+/** Isolated trigger so only this badge re-renders on disabled-state change. */
+const AttributeTabTrigger = memo(({ attribute, control }: TabTriggerProps) => {
+  const disabled = useWatch({
+    control,
+    name: `attributes.${attribute.name}.0.disabled` as const,
+  });
 
   return (
-    <div className="space-y-4">
-      <Tabs defaultValue={attributeDefinitions[0].name}>
-        {/* ------------------------------------------------------------------ */}
-        {/*                              TAB LIST                              */}
-        {/* ------------------------------------------------------------------ */}
-
-        <TabsList className="flex flex-wrap h-auto">
-          {attributeDefinitions.map((attribute) => {
-            const disabled = isTabDisabled(attribute.name);
-
-            return (
-              <TabsTrigger
-                key={attribute.id}
-                value={attribute.name}
-                className="gap-2"
-              >
-                <Badge variant={disabled ? "destructive" : "default"}>
-                  {attribute.name}
-                </Badge>
-              </TabsTrigger>
-            );
-          })}
-        </TabsList>
-
-        {attributeDefinitions.map((attribute) => (
-          <TabsContent key={attribute.id} value={attribute.name}>
-            <AttributeTable
-              attributeName={attribute.name}
-              control={control}
-              register={register}
-            />
-          </TabsContent>
-        ))}
-      </Tabs>
-    </div>
+    <TabsTrigger
+      value={attribute.name}
+      className="
+        group relative overflow-hidden
+        rounded-xl border border-transparent
+        px-4 py-2.5 text-sm font-medium
+        transition-all duration-200
+        data-[state=active]:bg-primary
+        data-[state=active]:text-primary-foreground
+        data-[state=active]:shadow-md
+        hover:bg-muted/70 hover:border-border
+      "
+    >
+      <div className="flex items-center gap-2">
+        <span>{attribute.name}</span>
+        <Badge
+          className={`
+            rounded-md px-2 py-0.5 text-[11px] font-semibold transition-colors
+            group-data-[state=active]:bg-white/20
+            group-data-[state=active]:text-white
+            ${disabled ? "text-red-600" : "action-text"}
+          `}
+        >
+          {disabled ? "Missing" : "Ready"}
+        </Badge>
+      </div>
+    </TabsTrigger>
   );
-}
+});
+AttributeTabTrigger.displayName = "AttributeTabTrigger";
 
 type AttributeTableProps = {
   attributeName: string;
@@ -181,48 +113,145 @@ type AttributeTableProps = {
   register: any;
 };
 
-function AttributeTable({
-  attributeName,
-  control,
-  register,
-}: AttributeTableProps) {
-  return (
-    <Card className="mt-4">
-      <CardContent className="pt-6">
-        <h2 className="text-lg font-semibold mb-4">{attributeName}</h2>
+const AttributeTable = memo(
+  ({ attributeName, control, register }: AttributeTableProps) => (
+    <Card className="mt-2 border-muted shadow-sm bg-primary py-0">
+      <CardContent className="p-4 py-[2.5rem] space-y-4">
+        <h2 className="description-text font-semibold">{attributeName}</h2>
 
-        <Table>
-          <TableBody>
-            <TableRow>
-              {/* VALUE INPUT */}
-              <TableCell className="w-[70%]">
-                <Input
-                  placeholder={`Enter ${attributeName}`}
-                  {...register(`attributes.${attributeName}.0.value`)}
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-4 items-center">
+          <Input
+            placeholder={`Enter ${attributeName}`}
+            {...register(`attributes.${attributeName}.0.value`)}
+            className="w-full description-text"
+          />
+
+          <div className="flex items-center gap-3 min-w-fit">
+            <Controller
+              control={control}
+              name={`attributes.${attributeName}.0.disabled`}
+              render={({ field }) => (
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
                 />
-              </TableCell>
-
-              {/* CHECKBOX */}
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  <Controller
-                    control={control}
-                    name={`attributes.${attributeName}.0.disabled`}
-                    render={({ field }) => (
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    )}
-                  />
-
-                  <span className="text-sm">Do not have this attribute</span>
-                </div>
-              </TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
+              )}
+            />
+            <label className="text-sm text-muted-foreground cursor-pointer">
+              Mark as unavailable
+            </label>
+          </div>
+        </div>
       </CardContent>
     </Card>
+  ),
+);
+AttributeTable.displayName = "AttributeTable";
+
+// ─── Main component ───────────────────────────────────────────────────────────
+
+export default function DynamicVariantTabs({
+  attributeDefinitions,
+  value,
+  onChange,
+}: DynamicTabsProps) {
+  // Stable refs — prevent subscription teardown on every render
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
+
+  const defsRef = useRef(attributeDefinitions);
+  defsRef.current = attributeDefinitions;
+
+  const defaultValues = useMemo<FormValues>(
+    () => ({
+      attributes: Object.fromEntries(
+        attributeDefinitions.map((attr) => [
+          attr.name,
+          [resolveInitialEntry(attr, value)],
+        ]),
+      ),
+    }),
+    [attributeDefinitions, value],
+  ); 
+
+
+  const { control, register, watch } = useForm<FormValues>({ defaultValues });
+
+ 
+  useEffect(() => {
+    const subscription = watch((formValues) => {
+      if (!onChangeRef.current || !formValues.attributes) return;
+
+      const payload: AttributePayloadItem[] = [];
+      const attrs = formValues.attributes as Record<string, AttributeValue[]>;
+
+      for (const [name, entries] of Object.entries(attrs)) {
+        const def = defsRef.current.find((d) => d.name === name);
+        if (!def) continue;
+        for (const entry of entries) {
+          if (entry?.value?.trim() && !entry.disabled) {
+            payload.push({ attributeId: def.id, value: entry.value });
+          }
+        }
+      }
+
+      onChangeRef.current(payload);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [watch]); 
+
+  if (!attributeDefinitions.length) {
+    return (
+      <p className="text-sm text-muted-foreground">No attributes available.</p>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <Tabs defaultValue={attributeDefinitions[0].name} className="w-full">
+        {/* Tab list */}
+        <div className="rounded-2xl border border-border/60 state-color backdrop-blur-sm shadow-sm p-2">
+          <TabsList className="flex w-full flex-wrap justify-start gap-2 bg-transparent p-0 h-auto">
+            {attributeDefinitions.map((attribute) => (
+              <AttributeTabTrigger
+                key={attribute.id}
+                attribute={attribute}
+                control={control}
+              />
+            ))}
+          </TabsList>
+        </div>
+
+        {/* Tab panels */}
+        {attributeDefinitions.map((attribute) => (
+          <TabsContent
+            key={attribute.id}
+            value={attribute.name}
+            className="
+              mt-5 rounded-2xl border border-border/60
+              bg-secondary shadow-sm animate-in fade-in-50
+            "
+          >
+            <div className="border-b border-border/50 px-6 py-4">
+              <h3 className="text-lg heading-font tracking-tight">
+                {attribute.name}
+              </h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                Configure and manage all related attribute values.
+              </p>
+            </div>
+
+            <div className="p-6">
+              <AttributeTable
+                attributeName={attribute.name}
+                control={control}
+                register={register}
+              />
+            </div>
+          </TabsContent>
+        ))}
+      </Tabs>
+    </div>
   );
 }
