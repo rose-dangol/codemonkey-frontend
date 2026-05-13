@@ -1,4 +1,4 @@
-import { Link, Outlet, useLocation } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Sidebar,
@@ -12,6 +12,7 @@ import {
   SidebarTrigger,
   SidebarProvider,
 } from "@/components/ui/sidebar";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   ChevronDown,
   HomeIcon,
@@ -33,6 +34,8 @@ export default function AppLayout() {
   const [openModal, setOpenModal] = useState(false);
   const location = useLocation();
   const lastSegment = location.pathname.split("/").filter(Boolean).pop();
+  const navigate = useNavigate();
+  const { logout } = useAuth();
 
   const items = [
     {
@@ -82,8 +85,11 @@ export default function AppLayout() {
         },
         {
           title: "Logout",
-          url: "/logout",
           icon: LogOutIcon,
+          action: async () => {
+            await logout();
+            navigate("/login");
+          },
         },
         {
           title: "Theme Select",

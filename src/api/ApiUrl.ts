@@ -1,8 +1,4 @@
-import axios from "axios";
+// Centralised Axios instance with auth interceptors
+// TODO: all services should import from @/lib/api, not here
 
-const api = axios.create({
-  baseURL: "http://localhost:4004/",
-  withCredentials: true,
-});
-
-export default api;
+export { api as default } from "@/lib/api";

@@ -1,6 +1,4 @@
 export function AppThemeLoader() {
-  console.log("called");
-
   const fallback = {
     heading: "#000000",
     description: "#444444",
