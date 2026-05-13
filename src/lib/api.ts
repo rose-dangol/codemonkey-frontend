@@ -7,7 +7,7 @@ export const api = axios.create({
   withCredentials: true, // sends the httpOnly refreshToken cookie automatically
 });
 
-// ─── Refresh-queue state ────────────────────────────────────────────────────
+// Refresh-queue state
 
 let isRefreshing = false;
 let refreshQueue: Array<(token: string) => void> = [];
@@ -25,8 +25,6 @@ const rejectQueue = (err: unknown) => {
   failQueue = [];
 };
 
-// ─── Request interceptor — attach Bearer token ──────────────────────────────
-
 api.interceptors.request.use((config) => {
   const token = tokenStore.get();
   if (token) {
@@ -35,7 +33,7 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// ─── Response interceptor — silent refresh on 401 ───────────────────────────
+// Response interceptor — silent refresh on 401
 
 api.interceptors.response.use(
   (res) => res,
@@ -72,7 +70,7 @@ api.interceptors.response.use(
     } catch (refreshError) {
       rejectQueue(refreshError);
       tokenStore.clear();
-      // Redirect to login — the refresh token cookie is also expired/invalid
+      // Redirect to login if the refresh token is also expired
       window.location.href = "/login";
       return Promise.reject(refreshError);
     } finally {
