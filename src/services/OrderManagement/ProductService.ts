@@ -1,5 +1,5 @@
 import api from "@/api/ApiUrl";
-import type {  UpdateProductDto } from "@/TypeDefinitions/ModalType";
+import type { UpdateProductDto } from "@/TypeDefinitions/ModalType";
 import { toast } from "react-toastify";
 
 export const ProductService = {
@@ -13,24 +13,24 @@ export const ProductService = {
     return res.data;
   },
 
-    create: async (data: UpdateProductDto) => {
-        try {
-            const res = await api.post(`product/addProduct`, data);
-            return res.data;
-        } catch (error: any) {
-            console.log(error);
-            return error.message;
-        }
-    },
+  create: async (data: UpdateProductDto) => {
+    try {
+      const res = await api.post(`product/addProduct`, data);
+      return res.data;
+    } catch (error: any) {
+      console.log(error);
+      return error.message;
+    }
+  },
 
-    update: async (id: string, data: UpdateProductDto) => {
-        try {
-            const res = await api.put(`product/updateProduct/${id}`, data);
-            return res.data;
-        } catch (error: any) {
-            toast.error(error.response?.data?.message || "Failed to update product");
-        }
-    },
+  update: async (id: string, data: UpdateProductDto) => {
+    try {
+      const res = await api.put(`product/updateProduct/${id}`, data);
+      return res.data;
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to update product");
+    }
+  },
 
   delete: async (id: string[]) => {
     const res = await api.delete(`category/deleteCategory`, {

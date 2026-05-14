@@ -42,7 +42,6 @@
   color: var(--state--color);
 }
 
-
 /*********************************** THIN SCROLLBAR *************************************/
 
 .thin-scrollbar::-webkit-scrollbar {

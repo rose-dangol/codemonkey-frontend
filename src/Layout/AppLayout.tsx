@@ -67,6 +67,16 @@ export default function AppLayout() {
           url: "/ordermgmt/productvariant",
           icon: TrophyIcon,
         },
+        {
+          title: "Attribute Definitions",
+          url: "/ordermgmt/attributedeinitions",
+          icon: SettingsIcon, 
+        },
+        {
+          title: "Cogs Definition",
+          url: "/ordermgmt/cogsdefinitions",
+          icon: SettingsIcon,
+        },
       ],
     },
     {
