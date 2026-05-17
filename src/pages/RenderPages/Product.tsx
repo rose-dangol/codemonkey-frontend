@@ -13,6 +13,7 @@ import { SquarePen } from "lucide-react";
 import { BrandService } from "@/services/OrderManagement/BrandService";
 import type { Product } from "@/TypeDefinitions/Product";
 import { ProductService } from "@/services/OrderManagement/ProductService";
+import { CogsService } from "@/services/OrderManagement/CogsService";
 
 const Product = () => {
   const [open, setOpen] = useState(false);
@@ -36,9 +37,11 @@ const Product = () => {
     queryFn: () => CategoryService.getAll(),
   });
 
+  
+
   const mutation = useMutation({
     mutationFn: (data: UpdateProductDto) =>
-      ProductService.update(data.id, data),
+      ProductService.update(data.id ?? "", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       // toast.success("Category updated successfully");
@@ -49,7 +52,6 @@ const Product = () => {
     mutationFn: (data: UpdateProductDto) =>
       ProductService.create({
         ...data,
-        serviceId: "3a014030-1f20-47b9-8848-04c4f8c0be54",
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
@@ -149,6 +151,7 @@ const Product = () => {
         fields={updateProductFields(
           brands,
           productCategory,
+       
           selectedProduct?.id,
         )}
         initialData={

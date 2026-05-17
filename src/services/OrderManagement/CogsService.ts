@@ -1,24 +1,24 @@
 import api from "@/api/ApiUrl";
-import type { AttributeDefinitionType } from "@/TypeDefinitions/AttributeDefinitions";
+import type { CogsDefinitionType } from "@/TypeDefinitions/CogsDefinitions";
 
-export const AttributeService = {
+export const CogsService = {
   getAll: async () => {
-    const res = await api.get(`attribute/getAllAttribute`);
+    const res = await api.get(`cogs/getAllCogsFields`);
     return res.data;
   },
 
-  create: async (data: AttributeDefinitionType) => {
-    const res = await api.post(`attribute/addAttribute`, data);
+  create: async (data: CogsDefinitionType) => {
+    const res = await api.post(`cogs/addCogsField`, data);
     return res.data;
   },
 
-  update: async (id: string, data: AttributeDefinitionType) => {
-    const res = await api.put(`attribute/updateAttribute/${id}`, data);
+  update: async (id: string, data: CogsDefinitionType) => {
+    const res = await api.put(`cogs/updateCogsFields/${id}`, data);
     return res.data;
   },
 
   delete: async (id: string[]) => {
-    const res = await api.delete(`attribute/deleteAttribute/${id}`);
+    const res = await api.delete(`cogs/deleteCogsFields/${id}`);
     return res.data;
   },
 

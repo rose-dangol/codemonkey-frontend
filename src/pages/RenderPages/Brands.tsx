@@ -191,9 +191,8 @@ const Brands = () => {
         open={productOpen}
         onOpenChange={setProductOpen}
         id={selectedId}
-        endpoint={"brand/getBrand/"+selectedId}
+        endpoint={"brand/getBrand/" + selectedId}
         title="Product Details"
-  
       />
     </div>
   );

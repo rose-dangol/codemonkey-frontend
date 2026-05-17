@@ -1,7 +1,7 @@
 import type { Product } from "./Product";
 
 export type AttributeDefinitionType = {
-  serviceTypeId: string;
+  id?: string;
   key: string;
   name: string;
   type: string;

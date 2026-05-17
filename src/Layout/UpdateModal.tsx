@@ -22,7 +22,14 @@ export function UpdateModal<T extends Record<string, any>>(
   const [formData, setFormData] = useState<Partial<T>>({});
   useEffect(() => {
     if (props.open) {
+      const tabDefaults = Object.fromEntries(
+        props.fields
+          .filter((f) => f.type === "tabs")
+          .map((f) => [f.key, []])
+      ) as Partial<T>;
+
       setFormData((prev) => ({
+        ...tabDefaults,
         ...props.initialData,
         ...prev,
       }));
@@ -56,13 +63,19 @@ export function UpdateModal<T extends Record<string, any>>(
       />
     ),
 
-    tabs: (field) => (
-      <DynamicVariantTabs
-        attributeDefinitions={field.tabDefinitions ?? []}
-        value={formData[field.key] as any}
-        onChange={(data) => handleChange(field.key, data as any)}
-      />
-    ),
+    tabs: (field) => {
+      const definitions =
+        field.tabDefinitions ??
+        field.options?.map((opt: any) => ({ id: opt.value, name: opt.label })) ??
+        [];
+      return (
+        <DynamicVariantTabs
+          attributeDefinitions={definitions}
+          value={formData[field.key] as any}
+          onChange={(data) => handleChange(field.key, data as any)}
+        />
+      );
+    },
 
     "multi-select": (field) => (
       <Select
@@ -126,7 +139,7 @@ export function UpdateModal<T extends Record<string, any>>(
 
   return (
     <Dialog open={props.open} onOpenChange={props.setOpen}>
-      <DialogContent className="bg-primary border-0">
+      <DialogContent className="bg-primary border-0 max-h-[calc(100vh-10rem)] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="heading-font">
             {props.title ?? "Update details"}
@@ -157,7 +170,9 @@ export function UpdateModal<T extends Record<string, any>>(
             <Button variant="outline">Cancel</Button>
           </DialogClose>
           <DialogClose asChild className="bg-black">
-            <Button onClick={handleSubmit}>Update</Button>
+            <Button onClick={handleSubmit}>
+              {props.initialData ? "Update" : "Add"}
+            </Button>
           </DialogClose>
         </DialogFooter>
       </DialogContent>

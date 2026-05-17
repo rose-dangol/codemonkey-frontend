@@ -8,7 +8,6 @@ export const BrandService = {
     return res.data;
   },
 
-
   create: async (data: UpdateBrandDto) => {
     try {
       const res = await api.post(`brand/addBrand`, data);

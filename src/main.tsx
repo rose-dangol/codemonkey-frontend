@@ -18,7 +18,13 @@ AppThemeLoader();
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      throwOnError: true,
+      throwOnError: (error: any) => {
+        return error?.response?.status !== 404;
+      },
+      retry: (failureCount, error: any) => {
+        if (error?.response?.status === 404) return false;
+        return failureCount < 3;
+      },
     },
   },
 });

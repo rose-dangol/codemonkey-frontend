@@ -10,10 +10,13 @@ import Product from "./pages/RenderPages/Product";
 import ProductVariant from "./pages/RenderPages/ProductVariant";
 import ProtectedRoute from "./ProtectedRoute";
 import EmailCheck from "./pages/EmailCheck";
+import AttributeDefinitions from "./pages/RenderPages/AttributeDefinitions";
+import CogsDefinitions from "./pages/RenderPages/CogsDefinition";
 
 const Router = () => {
   return (
     <Routes>
+      <Route path="/" element={<Login />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/email" element={<EmailCheck />} />
@@ -26,6 +29,14 @@ const Router = () => {
           <Route
             path="/ordermgmt/productvariant"
             element={<ProductVariant />}
+          />
+          <Route
+            path="/ordermgmt/attributedeinitions"
+            element={<AttributeDefinitions />}
+          />
+          <Route
+            path="/ordermgmt/cogsdefinitions"
+            element={<CogsDefinitions />}
           />
           <Route path="*" element={<NotFound />} />
         </Route>

@@ -17,6 +17,7 @@ import { AttributeService } from "@/services/OrderManagement/AttributeService";
 import { ProductVaraiantService } from "@/services/OrderManagement/ProductVaraiantService";
 import type { ProductVariantType } from "@/TypeDefinitions/ProductVariant";
 import { toast } from "react-toastify";
+import { CogsService } from "@/services/OrderManagement/CogsService";
 
 const ProductVariant = () => {
   const [open, setOpen] = useState(false);
@@ -35,8 +36,11 @@ const ProductVariant = () => {
 
   const { data: attributeData } = useQuery({
     queryKey: ["attributes"],
-    queryFn: () =>
-      AttributeService.getAll("3a014030-1f20-47b9-8848-04c4f8c0be54"),
+    queryFn: () => AttributeService.getAll(),
+  });
+  const { data: cogsData } = useQuery({
+    queryKey: ["cogs"],
+    queryFn: () => CogsService.getAll(),
   });
 
   // Derive unique attribute definitions from fetched attributes for DynamicTabs
@@ -210,6 +214,7 @@ const ProductVariant = () => {
         fields={updateProductVariantFields(
           products,
           attributeData,
+          cogsData,
           attributeDefinitions,
         )}
         initialData={selectedProduct ? mapVariantToForm(selectedProduct) : {}}
@@ -227,6 +232,7 @@ const ProductVariant = () => {
         fields={updateProductVariantFields(
           products,
           attributeData,
+          cogsData,
           attributeDefinitions,
         )}
         onUpdate={(updatedData) => {

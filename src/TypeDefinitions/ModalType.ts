@@ -1,6 +1,10 @@
-import type { Attributes, AttributeDefinitionType } from "./AttributeDefinitions";
+import type {
+  Attributes,
+  AttributeDefinitionType,
+} from "./AttributeDefinitions";
 import type { Brands } from "./Brands";
 import type { Category } from "./Category";
+import type { CogsDefinitionType } from "./CogsDefinitions";
 import type { Product } from "./Product";
 import type { ProductVariantType } from "./ProductVariant";
 
@@ -143,18 +147,20 @@ export const updateBrandFields = (
 ];
 
 export type UpdateProductDto = {
-  id: string;
+  id?: string | undefined | null;
+  serviceId?: string | undefined | null;
   productName?: string;
   quantity?: number;
   productCategoryId?: string;
   productBrandId?: string;
   productImage?: string;
-  serviceId: string;
+  cogs?: CogsDefinitionType[];
 };
 
 export const updateProductFields = (
   brands?: Brands[],
   categories?: Category[],
+
   currentId?: string,
 ): UpdateField<UpdateProductDto>[] => {
   const buildCategoryOptions = (cats?: Category[]): any[] => {
@@ -179,6 +185,7 @@ export const updateProductFields = (
       value: b.id,
     }));
   };
+
   return [
     {
       key: "productName",
@@ -215,9 +222,30 @@ export const updateProductFields = (
   ];
 };
 
+export const updateAttributeDefinitionFields = (
+  currentId?: string,
+): UpdateField<AttributeDefinitionType>[] => {
+  return [
+    {
+      key: "key",
+      label: "Attribute Key",
+      placeholder: "Enter attribute key",
+      type: "text",
+    },
+    {
+      key: "name",
+      label: "Attribute Name",
+      placeholder: "Enter Attribute Name",
+      type: "text",
+    },
+  ];
+};
+
 export const updateProductVariantFields = (
   product?: Product[],
   attributes?: Attributes[],
+  cogsData?: CogsDefinitionType[],
+
   attributeDefinitions?: AttributeDefinitionType[],
 ): UpdateField<ProductVariantType>[] => {
   const buildProductOptions = (pro?: Product[]): any[] => {
@@ -235,6 +263,16 @@ export const updateProductVariantFields = (
     return attrDefs.map((ad) => ({
       id: ad.serviceTypeId,
       name: ad.name,
+    }));
+  };
+
+  const buildCogsOptions = (
+    cogs?: CogsDefinitionType[],
+  ): { label: string; value: string }[] => {
+    if (!cogs) return [];
+    return cogs.map((c) => ({
+      label: c.key,
+      value: c.name,
     }));
   };
 
@@ -270,6 +308,13 @@ export const updateProductVariantFields = (
       placeholder: "Enter attributes",
       type: "tabs",
       tabDefinitions: buildTabDefinitions(attributeDefinitions),
+    },
+    {
+      key: "cogsData",
+      label: "Cogs",
+      placeholder: "Enter cogs",
+      type: "tabs",
+      options: buildCogsOptions(cogsData),
     },
   ];
 };

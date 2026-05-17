@@ -45,7 +45,8 @@ function resolveInitialEntry(
 
   if (Array.isArray(value)) {
     const item = (value as any[]).find((v) => v.attributeId === attr.id);
-    return { value: item?.value ?? "", disabled: true };
+    if (item) return { value: item.value ?? "", disabled: false };
+    return { value: "", disabled: true };
   }
 
   const raw = (value as any)[attr.name] ?? (value as any)[attr.id];
@@ -172,12 +173,10 @@ export default function DynamicVariantTabs({
       ),
     }),
     [attributeDefinitions, value],
-  ); 
-
+  );
 
   const { control, register, watch } = useForm<FormValues>({ defaultValues });
 
- 
   useEffect(() => {
     const subscription = watch((formValues) => {
       if (!onChangeRef.current || !formValues.attributes) return;
@@ -199,7 +198,7 @@ export default function DynamicVariantTabs({
     });
 
     return () => subscription.unsubscribe();
-  }, [watch]); 
+  }, [watch]);
 
   if (!attributeDefinitions.length) {
     return (
