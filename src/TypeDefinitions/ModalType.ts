@@ -241,6 +241,25 @@ export const updateAttributeDefinitionFields = (
   ];
 };
 
+export const updateCogsDefinitionFields = (
+  currentId?: string,
+): UpdateField<CogsDefinitionType>[] => {
+  return [
+    {
+      key: "key",
+      label: "Cogs Key",
+      placeholder: "Enter cogs key",
+      type: "text",
+    },
+    {
+      key: "name",
+      label: "Cogs Name",
+      placeholder: "Enter cogs name",
+      type: "text",
+    },
+  ];
+};
+
 export const updateProductVariantFields = (
   product?: Product[],
   attributes?: Attributes[],
@@ -261,7 +280,7 @@ export const updateProductVariantFields = (
   ): { id: string; name: string }[] => {
     if (!attrDefs) return [];
     return attrDefs.map((ad) => ({
-      id: ad.serviceTypeId,
+      id: ad.key,
       name: ad.name,
     }));
   };

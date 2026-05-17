@@ -1,9 +1,11 @@
 export type ProductVariantType = {
   id: string;
   productId: string;
-  cogsData?: { [key: string]: number };
+  cogsData?: Record<string, number>;
   sku?: string;
   price: number;
   stock: number;
-  attributes?: { [key: string]: string };
+  attributes?: { id?: string; attributeId?: string; key?: string; value: string }[];
 };
+
+

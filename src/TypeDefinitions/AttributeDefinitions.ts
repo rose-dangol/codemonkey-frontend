@@ -1,4 +1,4 @@
-import type { Product } from "./Product";
+
 
 export type AttributeDefinitionType = {
   id?: string;

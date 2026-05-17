@@ -1,17 +1,11 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import DemoPage from "@/payments/page";
-import { CategoryService } from "@/services/OrderManagement/Category";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import "@/App.css";
 import { UpdateModal } from "@/Layout/UpdateModal";
-import {
-  updateProductFields,
-  updateProductVariantFields,
-  type UpdateProductDto,
-} from "@/TypeDefinitions/ModalType";
+import { updateProductVariantFields } from "@/TypeDefinitions/ModalType";
 import { SquarePen } from "lucide-react";
-import type { Product } from "@/TypeDefinitions/Product";
 import { ProductService } from "@/services/OrderManagement/ProductService";
 import { AttributeService } from "@/services/OrderManagement/AttributeService";
 import { ProductVaraiantService } from "@/services/OrderManagement/ProductVaraiantService";
@@ -22,7 +16,8 @@ import { CogsService } from "@/services/OrderManagement/CogsService";
 const ProductVariant = () => {
   const [open, setOpen] = useState(false);
   const [openAdd, setOpenAdd] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedProduct, setSelectedProduct] =
+    useState<ProductVariantType | null>(null);
   const queryClient = useQueryClient();
   const { data: products } = useQuery({
     queryKey: ["products"],
@@ -108,10 +103,23 @@ const ProductVariant = () => {
   };
 
   const handleAdd = (data: Partial<ProductVariantType>) => {
-    addMutation.mutate(data as ProductVariantType);
+    const formattedData = {
+      ...data,
+      cogsData: Array.isArray(data.cogsData)
+        ? data.cogsData.reduce(
+            (acc, item) => {
+              acc[item.attributeId] = item.value;
+              return acc;
+            },
+            {} as Record<string, string>,
+          )
+        : data.cogsData,
+    } as ProductVariantType;
+
+    addMutation.mutate(formattedData);
   };
 
-  const productVariantColumns: ColumnDef<Product>[] = [
+  const productVariantColumns: ColumnDef<ProductVariantType>[] = [
     {
       accessorKey: "sku",
       header: "Sku",
@@ -125,6 +133,21 @@ const ProductVariant = () => {
       accessorKey: "stock",
       header: "Stock Quantity",
     },
+    {
+      accessorKey: "cogsData",
+      header: "Cogs Data",
+      cell: ({ row }) => {
+        const cogsData = row.original.cogsData;
+        if (!cogsData) return <div>null</div>;
+        return (
+          <div>
+            {Object.entries(cogsData).map(([key, value]) => (
+              <div key={key}>{value}</div>
+            ))}
+          </div>
+        );
+      },
+    },
 
     {
       accessorKey: "attributes",
@@ -137,7 +160,6 @@ const ProductVariant = () => {
         if (!attributes?.length) {
           return <div className="text-center">—</div>;
         }
-        console.log("attr", attributes);
 
         return (
           <div className="flex flex-wrap gap-2">
