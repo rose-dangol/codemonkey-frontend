@@ -13,7 +13,6 @@ import { SquarePen } from "lucide-react";
 import { BrandService } from "@/services/OrderManagement/BrandService";
 import type { Product } from "@/TypeDefinitions/Product";
 import { ProductService } from "@/services/OrderManagement/ProductService";
-import { CogsService } from "@/services/OrderManagement/CogsService";
 
 const Product = () => {
   const [open, setOpen] = useState(false);
@@ -36,8 +35,6 @@ const Product = () => {
     queryKey: ["product-category"],
     queryFn: () => CategoryService.getAll(),
   });
-
-  
 
   const mutation = useMutation({
     mutationFn: (data: UpdateProductDto) =>
@@ -151,7 +148,7 @@ const Product = () => {
         fields={updateProductFields(
           brands,
           productCategory,
-       
+
           selectedProduct?.id,
         )}
         initialData={

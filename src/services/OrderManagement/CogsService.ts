@@ -13,12 +13,14 @@ export const CogsService = {
   },
 
   update: async (id: string, data: CogsDefinitionType) => {
-    const res = await api.put(`cogs/updateCogsFields/${id}`, data);
+    const res = await api.put(`cogs/updateCogsField/${id}`, data);
     return res.data;
   },
 
   delete: async (id: string[]) => {
-    const res = await api.delete(`cogs/deleteCogsFields/${id}`);
+    const res = await api.delete(`cogs/deleteCogsField`, {
+      data: { ids: id },
+    });
     return res.data;
   },
 

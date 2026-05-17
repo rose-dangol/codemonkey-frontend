@@ -4,11 +4,11 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import "@/App.css";
 import { UpdateModal } from "@/Layout/UpdateModal";
-import { updateAttributeDefinitionFields } from "@/TypeDefinitions/ModalType";
+import {
+  updateCogsDefinitionFields,
+} from "@/TypeDefinitions/ModalType";
 import { SquarePen } from "lucide-react";
 
-import { AttributeService } from "@/services/OrderManagement/AttributeService";
-import type { AttributeDefinitionType } from "@/TypeDefinitions/AttributeDefinitions";
 import { toast } from "react-toastify";
 import { CogsService } from "@/services/OrderManagement/CogsService";
 import type { CogsDefinitionType } from "@/TypeDefinitions/CogsDefinitions";
@@ -22,23 +22,17 @@ const CogsDefinitions = () => {
 
   const queryClient = useQueryClient();
 
-  const { data: attributeData } = useQuery({
-    queryKey: ["attributes"],
-    queryFn: () =>
-      AttributeService.getAll(),
-  });
-
   const { data: cogsData } = useQuery({
     queryKey: ["cogs"],
     queryFn: () => CogsService.getAll(),
   });
 
   const mutation = useMutation({
-    mutationFn: (data: AttributeDefinitionType) =>
-      AttributeService.update(data.id ?? "", data),
+    mutationFn: (data: CogsDefinitionType) =>
+      CogsService.update(data.id ?? "", data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["attributes"] });
-      toast.success("Attribute updated successfully");
+      queryClient.invalidateQueries({ queryKey: ["cogs"] });
+      toast.success("Cogs updated successfully");
     },
     onError: () => {
       toast.error("Failed to update attribute");
@@ -59,26 +53,23 @@ const CogsDefinitions = () => {
     },
   });
 
-  //   const handleUpdate = (updatedData: Partial<UpdateProductDto>) => {
-  //     if (!selectedProduct) return;
-  //     mutation.mutate({
-  //       ...updatedData,
-  //       id: selectedProduct.id,
-  //     } as UpdateProductDto);
-  //   };
 
-  const handleUpdate = (updatedData: Partial<AttributeDefinitionType>) => {
+  const handleUpdate = (updatedData: Partial<CogsDefinitionType>) => {
     if (!selectedCogs) return;
     mutation.mutate({
       ...updatedData,
       id: selectedCogs.id,
-    } as AttributeDefinitionType);
+    } as CogsDefinitionType);
   };
 
   const handleDelete = async (id: string[]) => {
-    console.log("selectedId:", id);
-    await AttributeService.delete(id);
-    queryClient.invalidateQueries({ queryKey: ["attributes"] });
+    try {
+      await CogsService.delete(id);
+      queryClient.invalidateQueries({ queryKey: ["cogs"] });
+      toast.success("Cogs deleted successfully");
+    } catch (error) {
+      toast.error("Failed to delete Cogs");
+    }
   };
 
   const handleAdd = (data: Partial<CogsDefinitionType>) => {
@@ -125,26 +116,26 @@ const CogsDefinitions = () => {
         setOpenAdd={setOpenAdd}
         title={"Cogs Definition"}
       />
-      {/* <UpdateModal<AttributeDefinitionType>
+      <UpdateModal<CogsDefinitionType>
         open={open}
         setOpen={setOpen}
         title="Update Attribute Definitions"
         description="Update Attribute Definitions details"
-        fields={updateAttributeDefinitionFields(selectedAttribute?.id)}
-        initialData={selectedAttribute ?? undefined}
-        // allItems={productCategory}
+        fields={updateCogsDefinitionFields(selectedCogs?.id)}
+        initialData={selectedCogs ?? undefined}
+        allItems={cogsData}
         onUpdate={(updatedData) => {
           handleUpdate(updatedData);
           setOpen(false);
         }}
-      /> */}
+      />
 
-      <UpdateModal<AttributeDefinitionType>
+      <UpdateModal<CogsDefinitionType>
         open={openAdd}
         setOpen={setOpenAdd}
         title="Add Attribute Definitions"
         description="Add new Attribute Definitions"
-        fields={updateAttributeDefinitionFields()}
+        fields={updateCogsDefinitionFields()}
         onUpdate={(updatedData) => {
           handleAdd(updatedData);
           setOpenAdd(false);
