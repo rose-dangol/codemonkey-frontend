@@ -52,7 +52,6 @@ const Product = () => {
     mutationFn: (data: UpdateProductDto) =>
       ProductService.create({
         ...data,
-        serviceId: "3a014030-1f20-47b9-8848-04c4f8c0be54",
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });

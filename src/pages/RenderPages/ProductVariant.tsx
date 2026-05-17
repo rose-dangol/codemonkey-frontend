@@ -36,8 +36,7 @@ const ProductVariant = () => {
 
   const { data: attributeData } = useQuery({
     queryKey: ["attributes"],
-    queryFn: () =>
-      AttributeService.getAll("3a014030-1f20-47b9-8848-04c4f8c0be54"),
+    queryFn: () => AttributeService.getAll(),
   });
   const { data: cogsData } = useQuery({
     queryKey: ["cogs"],

@@ -2,10 +2,8 @@ import api from "@/api/ApiUrl";
 import type { AttributeDefinitionType } from "@/TypeDefinitions/AttributeDefinitions";
 
 export const AttributeService = {
-  getAll: async (serviceTypeId: string) => {
-    const res = await api.get(
-      `attribute/getAttributeByService/${serviceTypeId}`,
-    );
+  getAll: async () => {
+    const res = await api.get(`attribute/getAllAttribute`);
     return res.data;
   },
 

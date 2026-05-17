@@ -24,7 +24,7 @@ const AttributeDefinitions = () => {
   const { data: attributeData } = useQuery({
     queryKey: ["attributes"],
     queryFn: () =>
-      AttributeService.getAll("3a014030-1f20-47b9-8848-04c4f8c0be54"),
+      AttributeService.getAll(),
   });
 
   const mutation = useMutation({
@@ -44,7 +44,7 @@ const AttributeDefinitions = () => {
       AttributeService.create({
         ...data,
         type: "text",
-        serviceTypeId: "3a014030-1f20-47b9-8848-04c4f8c0be54",
+       
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["attributes"] });
