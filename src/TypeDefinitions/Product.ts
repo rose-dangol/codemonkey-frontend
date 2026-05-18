@@ -1,6 +1,6 @@
 import type { ProductVariantType } from "./ProductVariant";
 
-export type Product = {
+export type ProductType = {
   id: string;
   productName: string;
   quantity: number;

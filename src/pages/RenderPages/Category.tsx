@@ -3,7 +3,7 @@ import DemoPage from "@/payments/page";
 import { CategoryService } from "@/services/OrderManagement/Category";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Category } from "@/TypeDefinitions/Category";
+import type { CategoryType } from "@/TypeDefinitions/Category";
 import "@/App.css";
 import { UpdateModal } from "@/Layout/UpdateModal";
 import {
@@ -61,8 +61,7 @@ const Category = () => {
   const handleAdd = (data: Partial<UpdateCategoryDto>) => {
     addMutation.mutate(data as UpdateCategoryDto);
   };
-  const [categoryData, setCategoryData] = useState<Category[]>([]);
-
+  const [categoryData, setCategoryData] = useState<CategoryType[]>([]);
   const categoryColumns: ColumnDef<any, any>[] = [
     {
       accessorKey: "categoryImage",
@@ -106,16 +105,16 @@ const Category = () => {
     // Add more columns as needed
   ];
 
-  const flatallNodes = (
-    data: Category[],
+  const flatAllNodes = (
+    data: CategoryType[],
     level = 0,
-    result: (Category & { level: number })[] = [],
+    result: (CategoryType & { level: number })[] = [],
   ) => {
     for (const item of data) {
       result.push({ ...item, level });
 
       if (item.subCategories?.length) {
-        flatallNodes(item.subCategories, level + 1, result);
+        flatAllNodes(item.subCategories, level + 1, result);
       }
     }
 
@@ -123,7 +122,7 @@ const Category = () => {
   };
 
   useEffect(() => {
-    payments && setCategoryData(flatallNodes(payments));
+    payments && setCategoryData(flatAllNodes(payments));
   }, [payments]);
 
   return (

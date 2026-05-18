@@ -3,17 +3,14 @@ import DemoPage from "@/payments/page";
 import { CategoryService } from "@/services/OrderManagement/Category";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Category } from "@/TypeDefinitions/Category";
 import "@/App.css";
 import { UpdateModal } from "@/Layout/UpdateModal";
 import {
   updateBrandFields,
-  updateCategoryFields,
   type UpdateBrandDto,
-  type UpdateCategoryDto,
 } from "@/TypeDefinitions/ModalType";
-import { CloudCog, SquarePen } from "lucide-react";
-import type { Brands } from "@/TypeDefinitions/Brands";
+import { SquarePen } from "lucide-react";
+import type { BrandsType } from "@/TypeDefinitions/Brands";
 import { BrandService } from "@/services/OrderManagement/BrandService";
 import { ProductService } from "@/services/OrderManagement/ProductService";
 import { GetModal } from "@/Layout/GetModal";
@@ -73,7 +70,7 @@ const Brands = () => {
   const handleAdd = (data: Partial<UpdateBrandDto>) => {
     addMutation.mutate(data as UpdateBrandDto);
   };
-  const [brandData, setBrandData] = useState<Brands[]>([]);
+  const [brandData, setBrandData] = useState<BrandsType[]>([]);
 
   const brandColumns: ColumnDef<any, any>[] = [
     {

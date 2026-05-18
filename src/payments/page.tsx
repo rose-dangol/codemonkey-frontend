@@ -17,7 +17,6 @@ export default function DemoPage({
   columns,
   onUpdate,
   onDelete,
-  openAdd,
   setOpenAdd,
   title = "Value",
 }: DemoPageProps) {

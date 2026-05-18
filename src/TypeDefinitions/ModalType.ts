@@ -2,10 +2,10 @@ import type {
   Attributes,
   AttributeDefinitionType,
 } from "./AttributeDefinitions";
-import type { Brands } from "./Brands";
-import type { Category } from "./Category";
+import type { BrandsType } from "./Brands";
+import type { CategoryType } from "./Category";
 import type { CogsDefinitionType } from "./CogsDefinitions";
-import type { Product } from "./Product";
+import type { ProductType } from "./Product";
 import type { ProductVariantType } from "./ProductVariant";
 
 export type modalType = {
@@ -40,8 +40,8 @@ export type UpdateCategoryDto = {
   categoryParentId?: string | null;
   categoryImage?: string;
   categoryDesc?: string;
-  brand?: Brands;
-  productCategory?: Category;
+  brand?: BrandsType;
+  productCategory?: CategoryType;
 };
 
 type UpdateField<T> = {
@@ -66,7 +66,7 @@ type UpdateField<T> = {
 };
 
 export const updateCategoryFields = (
-  allItems?: Category[],
+  allItems?: CategoryType[],
   currentId?: string,
 ): UpdateField<UpdateCategoryDto>[] => [
   {
@@ -110,9 +110,9 @@ export type UpdateBrandDto = {
 };
 
 export const updateBrandFields = (
-  allItems?: Brands[],
+  allItems?: BrandsType[],
   currentId?: string,
-  allProducts?: Product[],
+  allProducts?: ProductType[],
 ): UpdateField<UpdateBrandDto>[] => [
   {
     key: "brandName",
@@ -158,12 +158,12 @@ export type UpdateProductDto = {
 };
 
 export const updateProductFields = (
-  brands?: Brands[],
-  categories?: Category[],
+  brands?: BrandsType[],
+  categories?: CategoryType[],
 
   currentId?: string,
 ): UpdateField<UpdateProductDto>[] => {
-  const buildCategoryOptions = (cats?: Category[]): any[] => {
+  const buildCategoryOptions = (cats?: CategoryType[]): any[] => {
     if (!cats) return [];
     return cats
       .filter((c) => c.id !== currentId)
@@ -177,7 +177,7 @@ export const updateProductFields = (
       }));
   };
 
-  const buildBrandOptions = (brand?: Brands[]): any[] => {
+  const buildBrandOptions = (brand?: BrandsType[]): any[] => {
     console.log("brand : ", brand);
     if (!brand) return [];
     return brand.map((b) => ({
@@ -261,13 +261,13 @@ export const updateCogsDefinitionFields = (
 };
 
 export const updateProductVariantFields = (
-  product?: Product[],
+  product?: ProductType[],
   attributes?: Attributes[],
   cogsData?: CogsDefinitionType[],
 
   attributeDefinitions?: AttributeDefinitionType[],
 ): UpdateField<ProductVariantType>[] => {
-  const buildProductOptions = (pro?: Product[]): any[] => {
+  const buildProductOptions = (pro?: ProductType[]): any[] => {
     if (!pro) return [];
     return pro.map((p) => ({
       label: p.productName,

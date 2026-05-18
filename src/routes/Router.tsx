@@ -1,18 +1,18 @@
 import { Route, Routes } from "react-router-dom";
-import Login from "./pages/auth/Login";
-import Register from "./pages/auth/Register";
-import Homepage from "./pages/RenderPages/Homepage";
-import AppLayout from "./Layout/AppLayout";
-import Category from "./pages/RenderPages/Category";
-import Brands from "./pages/RenderPages/Brands";
-import Product from "./pages/RenderPages/Product";
-import ProductVariant from "./pages/RenderPages/ProductVariant";
-import ProtectedRoute from "./ProtectedRoute";
-import EmailCheck from "./pages/EmailCheck";
-import AttributeDefinitions from "./pages/RenderPages/AttributeDefinitions";
-import CogsDefinitions from "./pages/RenderPages/CogsDefinition";
-import NotFound from "./pages/Fallback";
 import PublicRoutes from "./PublicRoute";
+import Login from "@/pages/auth/Login";
+import Register from "@/pages/auth/Register";
+import EmailCheck from "@/pages/EmailCheck";
+import ProtectedRoute from "./ProtectedRoute";
+import AppLayout from "@/Layout/AppLayout";
+import Homepage from "@/pages/RenderPages/Homepage";
+import Brands from "@/pages/RenderPages/Brands";
+import Category from "@/pages/RenderPages/Category";
+import Product from "@/pages/RenderPages/Product";
+import ProductVariant from "@/pages/RenderPages/ProductVariant";
+import AttributeDefinitions from "@/pages/RenderPages/AttributeDefinitions";
+import CogsDefinitions from "@/pages/RenderPages/CogsDefinition";
+import NotFound from "@/pages/Fallback";
 
 const Router = () => {
   return (

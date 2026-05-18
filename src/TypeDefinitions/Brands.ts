@@ -1,9 +1,9 @@
-import type { Product } from "./Product";
+import type { ProductType } from "./Product";
 
-export type Brands = {
+export type BrandsType = {
   id: string;
   brandName: string;
   brandImage: string;
   brandDesc: string;
-  products: Product[];
+  products: ProductType[];
 };

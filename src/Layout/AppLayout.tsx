@@ -70,7 +70,7 @@ export default function AppLayout() {
         {
           title: "Attribute Definitions",
           url: "/ordermgmt/attributedeinitions",
-          icon: SettingsIcon, 
+          icon: SettingsIcon,
         },
         {
           title: "Cogs Definition",
@@ -88,11 +88,11 @@ export default function AppLayout() {
       title: "Settings",
       icon: SettingsIcon,
       children: [
-        {
-          title: "Settings",
-          url: "/settings",
-          icon: SettingsIcon,
-        },
+        // {
+        //   title: "Settings",
+        //   url: "/settings",
+        //   icon: SettingsIcon,
+        // },
         {
           title: "Logout",
           icon: LogOutIcon,

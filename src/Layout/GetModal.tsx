@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import type { GetModalProps } from "@/TypeDefinitions/ModalType";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export function GetModal<T>({
   open,

@@ -20,7 +20,6 @@ import {
   ChevronUp,
   SlidersHorizontal,
   SquareCheck,
-  SquarePen,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -52,7 +51,6 @@ export function DataTable<TData extends { id: string }>({
   enableColumnVisibility = true,
   enableRowSelection = true,
   searchPlaceholder,
-  onUpdate,
   onDelete,
 }: DataTableProps<TData>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);

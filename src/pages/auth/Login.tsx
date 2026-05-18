@@ -37,7 +37,6 @@ const Login = () => {
         });
         onLoginSuccess(data.accessToken);
         navigate("/home");
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         toast.error("Login Failed.");
         console.error(error.status, error.message);
