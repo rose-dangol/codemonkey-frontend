@@ -42,7 +42,12 @@ api.interceptors.response.use(
       error.config;
 
     // Only handle 401s that haven't already been retried
-    if (error.response?.status !== 401 || original._retry) {
+    if (!error.response || error.response?.status !== 401 || original._retry) {
+      return Promise.reject(error);
+    }
+
+    // Skip silent refresh for login requests
+    if (original.url?.includes("auth/login")) {
       return Promise.reject(error);
     }
 
@@ -53,7 +58,15 @@ api.interceptors.response.use(
       return new Promise((resolve, reject) => {
         refreshQueue.push((token: string) => {
           original.headers.Authorization = `Bearer ${token}`;
-          resolve(api(original));
+          resolve(
+            axios({
+              ...original,
+              headers: {
+                ...original.headers,
+                Authorization: `Bearer ${token}`,
+              },
+            }),
+          );
         });
         failQueue.push(reject);
       });

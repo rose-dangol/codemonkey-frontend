@@ -1,6 +1,5 @@
 import { Route, Routes } from "react-router-dom";
 import Login from "./pages/auth/Login";
-import NotFound from "./pages/auth/NotFound";
 import Register from "./pages/auth/Register";
 import Homepage from "./pages/RenderPages/Homepage";
 import AppLayout from "./Layout/AppLayout";
@@ -12,13 +11,16 @@ import ProtectedRoute from "./ProtectedRoute";
 import EmailCheck from "./pages/EmailCheck";
 import AttributeDefinitions from "./pages/RenderPages/AttributeDefinitions";
 import CogsDefinitions from "./pages/RenderPages/CogsDefinition";
+import NotFound from "./pages/Fallback";
+import PublicRoutes from "./PublicRoute";
 
 const Router = () => {
   return (
     <Routes>
-      <Route path="/" element={<Login />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
+      <Route element={<PublicRoutes />}>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+      </Route>
       <Route path="/email" element={<EmailCheck />} />
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
@@ -38,9 +40,9 @@ const Router = () => {
             path="/ordermgmt/cogsdefinitions"
             element={<CogsDefinitions />}
           />
-          <Route path="*" element={<NotFound />} />
         </Route>
       </Route>
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 };
