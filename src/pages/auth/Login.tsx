@@ -13,6 +13,7 @@ import { LoginUser } from "@/services/Authenticate";
 import { Label } from "@radix-ui/react-label";
 import { useFormik } from "formik";
 import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import * as Yup from "yup";
 
 const Login = () => {
@@ -29,12 +30,18 @@ const Login = () => {
       password: Yup.string().required("Password is required."),
     }),
     onSubmit: async (values) => {
-      const data = await LoginUser({
-        username: values.username,
-        password: values.password,
-      });
-      onLoginSuccess(data.accessToken);
-      navigate("/home");
+      try {
+        const data = await LoginUser({
+          username: values.username,
+          password: values.password,
+        });
+        onLoginSuccess(data.accessToken);
+        navigate("/home");
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (error: any) {
+        toast.error("Login Failed.");
+        console.error(error.status, error.message);
+      }
     },
   });
 
