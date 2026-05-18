@@ -8,7 +8,7 @@ import { updateProductVariantFields } from "@/TypeDefinitions/ModalType";
 import { SquarePen } from "lucide-react";
 import { ProductService } from "@/services/OrderManagement/ProductService";
 import { AttributeService } from "@/services/OrderManagement/AttributeService";
-import { ProductVaraiantService } from "@/services/OrderManagement/ProductVaraiantService";
+import { ProductVariantService } from "@/services/OrderManagement/ProductVariantService";
 import type { ProductVariantType } from "@/TypeDefinitions/ProductVariant";
 import { toast } from "react-toastify";
 import { CogsService } from "@/services/OrderManagement/CogsService";
@@ -26,7 +26,7 @@ const ProductVariant = () => {
 
   const { data: productVariant } = useQuery({
     queryKey: ["productVariant"],
-    queryFn: () => ProductVaraiantService.getAll(),
+    queryFn: () => ProductVariantService.getAll(),
   });
 
   const { data: attributeData } = useQuery({
@@ -57,7 +57,7 @@ const ProductVariant = () => {
 
   const mutation = useMutation({
     mutationFn: (data: ProductVariantType) =>
-      ProductVaraiantService.update(data.id, data),
+      ProductVariantService.update(data.id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["productVariant"] });
       toast.success("Product Variant updated successfully");
@@ -69,7 +69,7 @@ const ProductVariant = () => {
 
   const addMutation = useMutation({
     mutationFn: (data: ProductVariantType) =>
-      ProductVaraiantService.create(data),
+      ProductVariantService.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["productVariant"] });
       toast.success("Product Variant created successfully");
@@ -98,7 +98,7 @@ const ProductVariant = () => {
   };
 
   const handleDelete = async (id: string[]) => {
-    await ProductVaraiantService.delete(id);
+    await ProductVariantService.delete(id);
     queryClient.invalidateQueries({ queryKey: ["productVariant"] });
   };
 

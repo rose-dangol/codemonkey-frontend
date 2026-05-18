@@ -4,9 +4,7 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import "@/App.css";
 import { UpdateModal } from "@/Layout/UpdateModal";
-import {
-  updateCogsDefinitionFields,
-} from "@/TypeDefinitions/ModalType";
+import { updateCogsDefinitionFields } from "@/TypeDefinitions/ModalType";
 import { SquarePen } from "lucide-react";
 
 import { toast } from "react-toastify";
@@ -52,7 +50,6 @@ const CogsDefinitions = () => {
       toast.error("Failed to create attribute");
     },
   });
-
 
   const handleUpdate = (updatedData: Partial<CogsDefinitionType>) => {
     if (!selectedCogs) return;

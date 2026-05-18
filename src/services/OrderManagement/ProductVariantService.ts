@@ -2,7 +2,7 @@ import api from "@/api/ApiUrl";
 import type { ProductVariantType } from "@/TypeDefinitions/ProductVariant";
 import { toast } from "react-toastify";
 
-export const ProductVaraiantService = {
+export const ProductVariantService = {
   getAll: async () => {
     const res = await api.get(`productVariant/getAll`);
     return res.data;

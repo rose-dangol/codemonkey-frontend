@@ -5,7 +5,10 @@ export type ProductVariantType = {
   sku?: string;
   price: number;
   stock: number;
-  attributes?: { id?: string; attributeId?: string; key?: string; value: string }[];
+  attributes?: {
+    id?: string;
+    attributeId?: string;
+    key?: string;
+    value: string;
+  }[];
 };
-
-

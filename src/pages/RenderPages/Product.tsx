@@ -11,13 +11,15 @@ import {
 } from "@/TypeDefinitions/ModalType";
 import { SquarePen } from "lucide-react";
 import { BrandService } from "@/services/OrderManagement/BrandService";
-import type { Product } from "@/TypeDefinitions/Product";
+import type { ProductType } from "@/TypeDefinitions/Product";
 import { ProductService } from "@/services/OrderManagement/ProductService";
 
 const Product = () => {
   const [open, setOpen] = useState(false);
   const [openAdd, setOpenAdd] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<ProductType | null>(
+    null,
+  );
 
   const queryClient = useQueryClient();
 
@@ -73,9 +75,9 @@ const Product = () => {
   const handleAdd = (data: Partial<UpdateProductDto>) => {
     addMutation.mutate(data as UpdateProductDto);
   };
-  const [productData, setProductData] = useState<Product[]>([]);
+  const [productData, setProductData] = useState<ProductType[]>([]);
 
-  const productColumns: ColumnDef<Product>[] = [
+  const productColumns: ColumnDef<ProductType>[] = [
     {
       accessorKey: "productImage",
       header: "Product Image",
