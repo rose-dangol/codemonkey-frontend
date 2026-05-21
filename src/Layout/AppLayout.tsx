@@ -39,6 +39,11 @@ export default function AppLayout() {
 
   const items = [
     {
+      title: "Dashboard",
+      icon: HomeIcon,
+      url: "/dashboard",
+    },
+    {
       title: "Order Management",
       icon: HomeIcon,
       children: [
@@ -79,11 +84,7 @@ export default function AppLayout() {
         },
       ],
     },
-    {
-      title: "Dashboard",
-      icon: HomeIcon,
-      url: "/dashboard",
-    },
+
     {
       title: "Settings",
       icon: SettingsIcon,
@@ -128,6 +129,36 @@ export default function AppLayout() {
       subText: "#ddb892", // muted secondary text
       backgroundPrimary: "#7f5539", // rich dark base
       backgroundSecondary: "#b08968", // elevated surfaces / cards
+    },
+    {
+      title: "Eleganteh",
+      heading: "#000000",
+      description: "#4A4E69",
+      subText: "#9A8C98",
+      backgroundSecondary: "#FFFFFF",
+      backgroundPrimary: "#F0F1EC",
+      action: "#FFCB44",
+      actionHover: "#e6b530",
+      state: "#056B6A",
+      stateLight: "rgba(5,107,106,0.10)",
+      actionLight: "rgba(255,203,68,0.15)",
+      border: "rgba(74,78,105,0.12)",
+      shadow: "rgba(74,78,105,0.08)",
+    },
+    {
+      title: "Dark Eleganteh",
+      heading: "#F0EEE9",
+      description: "#B8B8CC",
+      subText: "#6E6A7C",
+      backgroundSecondary: "#1C1C26",
+      backgroundPrimary: "#13131A",
+      action: "#FFCB44",
+      actionHover: "#e6b530",
+      state: "#09948F",
+      stateLight: "rgba(9,148,143,0.12)",
+      actionLight: "rgba(255,203,68,0.12)",
+      border: "rgba(240,238,233,0.07)",
+      shadow: "rgba(0,0,0,0.35)",
     },
 
     {

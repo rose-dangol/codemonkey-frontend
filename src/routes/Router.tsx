@@ -13,6 +13,7 @@ import ProductVariant from "@/pages/RenderPages/ProductVariant";
 import AttributeDefinitions from "@/pages/RenderPages/AttributeDefinitions";
 import CogsDefinitions from "@/pages/RenderPages/CogsDefinition";
 import NotFound from "@/pages/Fallback";
+import Dashboard from "../pages/RenderPages/Dashboard";
 
 const Router = () => {
   return (
@@ -40,6 +41,7 @@ const Router = () => {
             path="/ordermgmt/cogsdefinitions"
             element={<CogsDefinitions />}
           />
+          <Route path="/dashboard" element={<Dashboard/>} />
         </Route>
       </Route>
       <Route path="*" element={<NotFound />} />

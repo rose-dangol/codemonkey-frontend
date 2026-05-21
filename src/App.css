@@ -1,3 +1,23 @@
+/* ─── Soft Lavender Theme ──────────────────────────────────────────────────── */
+/* 
+:root {
+  --color-heading:     #000000;
+  --color-description: #4A4E69;
+  --color-subtext:     #9A8C98;
+  --bg-primary:        #F0F1EC;
+  --bg-secondary:      #FFFFFF;
+  --action--color:     #FFCB44;
+  --action-hover:      #e6b530;
+  --state--color:      #056B6A;
+  --state-light:       rgba(5, 107, 106, 0.10);
+  --action-light:      rgba(255, 203, 68, 0.15);
+  --border-color:      rgba(74, 78, 105, 0.12);
+  --shadow-color:      rgba(74, 78, 105, 0.08);
+  --hoverColor:        rgba(74, 78, 105, 0.06);
+} */
+
+/* ─── Typography ────────────────────────────────────────────────────────────── */
+
 .heading-font {
   color: var(--color-heading);
 }
@@ -10,6 +30,8 @@
   color: var(--color-subtext);
 }
 
+/* ─── Backgrounds ───────────────────────────────────────────────────────────── */
+
 .bg-primary {
   background-color: var(--bg-primary);
 }
@@ -17,6 +39,8 @@
 .bg-secondary {
   background-color: var(--bg-secondary);
 }
+
+/* ─── Action (Yellow) ───────────────────────────────────────────────────────── */
 
 .action {
   background-color: var(--action--color);
@@ -30,9 +54,11 @@
   color: var(--action--color);
 }
 
-.hover-color {
-  background-color: var(--hoverColor);
+.action-light-bg {
+  background-color: var(--action-light);
 }
+
+/* ─── State (Teal) ──────────────────────────────────────────────────────────── */
 
 .state-color {
   background-color: var(--state--color);
@@ -42,10 +68,39 @@
   color: var(--state--color);
 }
 
-/*********************************** THIN SCROLLBAR *************************************/
+.state-light-bg {
+  background-color: var(--state-light);
+}
+
+/* ─── Hover ─────────────────────────────────────────────────────────────────── */
+
+.hover-color {
+  background-color: var(--hoverColor);
+}
+
+/* ─── Cards & Surfaces ──────────────────────────────────────────────────────── */
+
+.card {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 16px var(--shadow-color);
+  border-radius: 1rem;
+}
+
+.card:hover {
+  box-shadow: 0 4px 24px var(--shadow-color);
+}
+
+/* ─── Borders ───────────────────────────────────────────────────────────────── */
+
+.border-theme {
+  border: 1px solid var(--border-color);
+}
+
+/* ─── Thin Scrollbar ────────────────────────────────────────────────────────── */
 
 .thin-scrollbar::-webkit-scrollbar {
-  width: 4px; /* 👈 thinner */
+  width: 4px;
 }
 
 .thin-scrollbar::-webkit-scrollbar-track {
@@ -53,10 +108,26 @@
 }
 
 .thin-scrollbar::-webkit-scrollbar-thumb {
-  background-color: rgba(156, 163, 175, 0.5); /* gray-400 */
+  background-color: rgba(156, 163, 175, 0.5);
   border-radius: 9999px;
 }
 
 .thin-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(107, 114, 128, 0.7); /* darker on hover */
+  background-color: rgba(107, 114, 128, 0.7);
+}
+
+/* ─── Global scrollbar ──────────────────────────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(154, 140, 152, 0.4);
+  border-radius: 9999px;
 }
