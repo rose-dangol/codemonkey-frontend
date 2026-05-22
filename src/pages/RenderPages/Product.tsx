@@ -67,8 +67,7 @@ const Product = () => {
   };
 
   const handleDelete = async (id: string[]) => {
-    console.log("selectedId:", id);
-    await CategoryService.delete(id);
+    await ProductService.delete(id);
     queryClient.invalidateQueries({ queryKey: ["products"] });
   };
 
@@ -81,6 +80,20 @@ const Product = () => {
     {
       accessorKey: "productImage",
       header: "Product Image",
+      cell: ({ row }) => {
+        const imageUrl = row.original.productImage;
+        return imageUrl ? (
+          <img
+            src={imageUrl}
+            alt={row.original.productImage}
+            className="h-20 w-20 rounded-lg object-cover border border-[#18181b]"
+          />
+        ) : (
+          <div className="h-9 w-9 rounded-lg bg-[#18181b] flex items-center justify-center text-[#8A8A8A] text-xs">
+            N/A
+          </div>
+        );
+      },
     },
     {
       accessorKey: "productName",

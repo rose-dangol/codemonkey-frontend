@@ -26,6 +26,7 @@ const Router = () => {
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
           <Route path="/home" element={<Homepage />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/ordermgmt/category" element={<Category />} />
           <Route path="/ordermgmt/brands" element={<Brands />} />
           <Route path="/ordermgmt/products" element={<Product />} />
@@ -41,7 +42,6 @@ const Router = () => {
             path="/ordermgmt/cogsdefinitions"
             element={<CogsDefinitions />}
           />
-          <Route path="/dashboard" element={<Dashboard/>} />
         </Route>
       </Route>
       <Route path="*" element={<NotFound />} />

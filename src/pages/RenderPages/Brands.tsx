@@ -1,6 +1,5 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import DemoPage from "@/payments/page";
-import { CategoryService } from "@/services/OrderManagement/Category";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import "@/App.css";
@@ -54,7 +53,6 @@ const Brands = () => {
 
   const handleUpdate = (updatedData: Partial<UpdateBrandDto>) => {
     if (!selectedBrand) return;
-    console.log("called");
     mutation.mutate({
       ...updatedData,
       id: selectedBrand.id,
@@ -62,8 +60,7 @@ const Brands = () => {
   };
 
   const handleDelete = async (id: string[]) => {
-    console.log("selectedId:", id);
-    await CategoryService.delete(id);
+    await BrandService.delete(id);
     queryClient.invalidateQueries({ queryKey: ["payments"] });
   };
 
@@ -76,6 +73,20 @@ const Brands = () => {
     {
       accessorKey: "brandImage",
       header: "Brand Image",
+      cell: ({ row }) => {
+        const imageUrl = row.original.brandImage;
+        return imageUrl ? (
+          <img
+            src={imageUrl}
+            alt={row.original.brandName}
+            className="h-20 w-20 rounded-lg object-cover border border-[#18181b]"
+          />
+        ) : (
+          <div className="h-9 w-9 rounded-lg bg-[#18181b] flex items-center justify-center text-[#8A8A8A] text-xs">
+            N/A
+          </div>
+        );
+      },
     },
     {
       accessorKey: "brandName",

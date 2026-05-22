@@ -38,7 +38,7 @@ export type UpdateCategoryDto = {
   id: string;
   categoryName?: string;
   categoryParentId?: string | null;
-  categoryImage?: string;
+  categoryImage?: File | string | null;
   categoryDesc?: string;
   brand?: BrandsType;
   productCategory?: CategoryType;
@@ -56,7 +56,8 @@ type UpdateField<T> = {
     | "multi-select"
     | "dropdown"
     | "select(parent)"
-    | "tabs";
+    | "tabs"
+    | "image";
   options?: { label: string; value: string; children?: any[] }[];
   tabDefinitions?: { id: string; name: string }[];
   cell?: (
@@ -91,7 +92,7 @@ export const updateCategoryFields = (
     key: "categoryImage",
     label: "Category Image",
     placeholder: "Enter image url",
-    type: "text",
+    type: "image",
   },
   {
     key: "categoryDesc",
@@ -104,7 +105,7 @@ export const updateCategoryFields = (
 export type UpdateBrandDto = {
   id: string;
   brandName?: string;
-  brandImage?: string;
+  brandImage?: File | string | null;
   brandDesc?: string;
   productId?: string[];
 };
@@ -124,7 +125,7 @@ export const updateBrandFields = (
     key: "brandImage",
     label: "Brand Image",
     placeholder: "Enter image url",
-    type: "text",
+    type: "image",
   },
   {
     key: "brandDesc",
@@ -153,7 +154,7 @@ export type UpdateProductDto = {
   quantity?: number;
   productCategoryId?: string;
   productBrandId?: string;
-  productImage?: string;
+  productImage?: File | string | null;
   cogs?: CogsDefinitionType[];
 };
 
@@ -178,7 +179,6 @@ export const updateProductFields = (
   };
 
   const buildBrandOptions = (brand?: BrandsType[]): any[] => {
-    console.log("brand : ", brand);
     if (!brand) return [];
     return brand.map((b) => ({
       label: b.brandName,
@@ -217,7 +217,7 @@ export const updateProductFields = (
       key: "productImage",
       label: "Product Image",
       placeholder: "Enter image url",
-      type: "text",
+      type: "image",
     },
   ];
 };

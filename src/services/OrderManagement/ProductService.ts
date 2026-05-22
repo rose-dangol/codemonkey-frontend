@@ -15,17 +15,53 @@ export const ProductService = {
 
   create: async (data: UpdateProductDto) => {
     try {
-      const res = await api.post(`product/addProduct`, data);
+      const formData = new FormData();
+
+      formData.append("productName", data.productName!);
+
+      formData.append("productCategoryId", data.productCategoryId!);
+
+      if (data.productBrandId) {
+        formData.append("productBrandId", data.productBrandId);
+      }
+
+      formData.append("quantity", String(data.quantity!));
+
+      if (data.productImage instanceof File) {
+        formData.append("productImage", data.productImage);
+      }
+
+      const res = await api.post(`product/addProduct`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
       return res.data;
     } catch (error: any) {
-      console.log(error);
+      console.error(error);
       return error.message;
     }
   },
 
   update: async (id: string, data: UpdateProductDto) => {
     try {
-      const res = await api.put(`product/updateProduct/${id}`, data);
+      const formData = new FormData();
+
+      formData.append("productName", data.productName!);
+      formData.append("productCategoryId", data.productCategoryId!);
+
+      if (data.productBrandId) {
+        formData.append("productBrandId", data.productBrandId);
+      }
+
+      formData.append("quantity", String(data.quantity!));
+
+      if (data.productImage instanceof File) {
+        formData.append("productImage", data.productImage);
+      }
+
+      const res = await api.put(`product/updateProduct/${id}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       return res.data;
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Failed to update product");
@@ -33,8 +69,8 @@ export const ProductService = {
   },
 
   delete: async (id: string[]) => {
-    const res = await api.delete(`category/deleteCategory`, {
-      data: { categoryId: id },
+    const res = await api.delete(`product/deleteProduct`, {
+      data: { productId: id },
     });
     return res.data;
   },
