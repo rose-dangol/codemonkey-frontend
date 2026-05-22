@@ -36,7 +36,7 @@ const Login = () => {
           password: values.password,
         });
         onLoginSuccess(data.accessToken);
-        navigate("/home");
+        navigate("/dashboard");
       } catch (error: any) {
         toast.error("Login Failed.");
         console.error(error.status, error.message);

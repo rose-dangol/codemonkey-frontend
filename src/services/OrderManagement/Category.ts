@@ -17,17 +17,41 @@ export const CategoryService = {
 
   create: async (data: UpdateCategoryDto) => {
     try {
-      const res = await api.post(`category/addCategory`, data);
+      const formData = new FormData();
+      formData.append("categoryName", data.categoryName!);
+      formData.append("categoryDesc", data.categoryDesc!);
+
+      if (data.categoryParentId) {
+        formData.append("categoryParentId", data.categoryParentId);
+      }
+      if (data.categoryImage instanceof File) {
+        formData.append("categoryImage", data.categoryImage);
+      }
+
+      const res = await api.post(`category/addCategory`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       return res.data;
-    } catch (error: any) {
-      console.log(error);
-      return error.message;
+    } catch (error) {
+      console.error(error);
     }
   },
 
   update: async (id: string, data: UpdateCategoryDto) => {
     try {
-      const res = await api.put(`category/updateCategory/${id}`, data);
+      const formData = new FormData();
+      formData.append("categoryName", data.categoryName!);
+      formData.append("categoryDesc", data.categoryDesc!);
+      if (data.categoryParentId) {
+        formData.append("categoryParentId", data.categoryParentId);
+      }
+      if (data.categoryImage instanceof File) {
+        formData.append("categoryImage", data.categoryImage);
+      }
+
+      const res = await api.put(`category/updateCategory/${id}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       return res.data;
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Failed to update category");

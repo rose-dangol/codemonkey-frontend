@@ -1,6 +1,5 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import DemoPage from "@/payments/page";
-import { CategoryService } from "@/services/OrderManagement/Category";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import "@/App.css";
@@ -9,7 +8,7 @@ import {
   updateBrandFields,
   type UpdateBrandDto,
 } from "@/TypeDefinitions/ModalType";
-import { SquarePen } from "lucide-react";
+import { Loader2, SquarePen } from "lucide-react";
 import type { BrandsType } from "@/TypeDefinitions/Brands";
 import { BrandService } from "@/services/OrderManagement/BrandService";
 import { ProductService } from "@/services/OrderManagement/ProductService";
@@ -52,9 +51,15 @@ const Brands = () => {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: (id: string[]) => BrandService.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["payments"] });
+    },
+  });
+
   const handleUpdate = (updatedData: Partial<UpdateBrandDto>) => {
     if (!selectedBrand) return;
-    console.log("called");
     mutation.mutate({
       ...updatedData,
       id: selectedBrand.id,
@@ -62,9 +67,7 @@ const Brands = () => {
   };
 
   const handleDelete = async (id: string[]) => {
-    console.log("selectedId:", id);
-    await CategoryService.delete(id);
-    queryClient.invalidateQueries({ queryKey: ["payments"] });
+    deleteMutation.mutate(id);
   };
 
   const handleAdd = (data: Partial<UpdateBrandDto>) => {
@@ -76,6 +79,20 @@ const Brands = () => {
     {
       accessorKey: "brandImage",
       header: "Brand Image",
+      cell: ({ row }) => {
+        const imageUrl = row.original.brandImage;
+        return imageUrl ? (
+          <img
+            src={imageUrl}
+            alt={row.original.brandName}
+            className="h-20 w-20 rounded-lg object-cover border border-[#18181b]"
+          />
+        ) : (
+          <div className="h-9 w-9 rounded-lg bg-[#18181b] flex items-center justify-center text-[#8A8A8A] text-xs">
+            N/A
+          </div>
+        );
+      },
     },
     {
       accessorKey: "brandName",
@@ -146,8 +163,16 @@ const Brands = () => {
     payments && setBrandData(payments);
   }, [payments]);
 
+  const isLoading =
+    mutation.isPending || addMutation.isPending || deleteMutation.isPending;
+
   return (
     <div>
+      {isLoading && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/50 backdrop-blur-sm rounded-lg">
+          <Loader2 className="animate-spin h-8 w-8 text-primary" />
+        </div>
+      )}
       <h1 className="heading-font">Brands</h1>
 
       <DemoPage

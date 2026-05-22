@@ -23,18 +23,15 @@ export function UpdateModal<T extends Record<string, any>>(
   useEffect(() => {
     if (props.open) {
       const tabDefaults = Object.fromEntries(
-        props.fields
-          .filter((f) => f.type === "tabs")
-          .map((f) => [f.key, []])
+        props.fields.filter((f) => f.type === "tabs").map((f) => [f.key, []]),
       ) as Partial<T>;
 
-      setFormData((prev) => ({
+      setFormData({
         ...tabDefaults,
         ...props.initialData,
-        ...prev,
-      }));
+      });
     }
-  }, [props.open]);
+  }, [props.open, props.initialData, props.fields]);
 
   const handleChange = (key: string, value: any) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
@@ -66,7 +63,10 @@ export function UpdateModal<T extends Record<string, any>>(
     tabs: (field) => {
       const definitions =
         field.tabDefinitions ??
-        field.options?.map((opt: any) => ({ id: opt.value, name: opt.label })) ??
+        field.options?.map((opt: any) => ({
+          id: opt.value,
+          name: opt.label,
+        })) ??
         [];
       return (
         <DynamicVariantTabs
@@ -135,6 +135,41 @@ export function UpdateModal<T extends Record<string, any>>(
         ))}
       </select>
     ),
+    image: (field) => {
+      const currentValue = formData[field.key];
+      const previewUrl =
+        currentValue instanceof File
+          ? URL.createObjectURL(currentValue)
+          : typeof currentValue === "string"
+            ? currentValue
+            : null;
+
+      return (
+        <div className="flex items-center gap-3">
+          {previewUrl && (
+            <img
+              src={previewUrl}
+              alt="Preview"
+              className="h-12 w-12 rounded-lg object-cover border border-slate-700"
+            />
+          )}
+          <label className="flex items-center gap-2 cursor-pointer">
+            <span className="description-text">🔗 Choose File</span>
+            <input
+              id={field.key}
+              type="file"
+              className="hidden"
+              name="image"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) handleChange(field.key, file);
+              }}
+            />
+          </label>
+        </div>
+      );
+    },
   };
 
   return (
