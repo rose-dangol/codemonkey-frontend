@@ -48,6 +48,7 @@ const ProductVariant = () => {
       }
     }
     return Array.from(seen.entries()).map(([key, id]) => ({
+      id,
       serviceTypeId: id,
       key,
       name: key,
@@ -115,6 +116,8 @@ const ProductVariant = () => {
           )
         : data.cogsData,
     } as ProductVariantType;
+
+    console.log("formattedData", formattedData);
 
     addMutation.mutate(formattedData);
   };

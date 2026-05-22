@@ -1,9 +1,30 @@
 import api from "@/api/ApiUrl";
-import type { AttributeDefinitionType } from "@/TypeDefinitions/AttributeDefinitions";
 
 export const saleService = {
   getAll: async () => {
     const res = await api.get(`order/analytics`);
+    return res.data;
+  },
+
+  getRevenueChart: async (
+    startDate: string,
+    endDate: string,
+    granularity: "day" | "month" | "year" = "month",
+  ) => {
+    const res = await api.get(
+      `order/revenue-chart?startDate=${startDate}&endDate=${endDate}&groupBy=${granularity}`,
+    );
+    return res.data;
+  },
+
+  getOrderChart: async (
+    startDate: string,
+    endDate: string,
+    granularity: "day" | "month" | "year" = "month",
+  ) => {
+    const res = await api.get(
+      `order/order-chart?startDate=${startDate}&endDate=${endDate}&groupBy=${granularity}`,
+    );
     return res.data;
   },
 

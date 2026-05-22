@@ -46,8 +46,8 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // Skip silent refresh for login requests
-    if (original.url?.includes("auth/login")) {
+    // Skip silent refresh for login or refresh requests
+    if (original.url?.includes("auth/login") || original.url?.includes("auth/refresh")) {
       return Promise.reject(error);
     }
 

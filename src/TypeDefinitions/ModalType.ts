@@ -280,7 +280,7 @@ export const updateProductVariantFields = (
   ): { id: string; name: string }[] => {
     if (!attrDefs) return [];
     return attrDefs.map((ad) => ({
-      id: ad.key,
+      id: ad.id ?? ad.key,
       name: ad.name,
     }));
   };
