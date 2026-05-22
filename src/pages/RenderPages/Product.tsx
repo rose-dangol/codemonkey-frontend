@@ -9,7 +9,7 @@ import {
   updateProductFields,
   type UpdateProductDto,
 } from "@/TypeDefinitions/ModalType";
-import { SquarePen } from "lucide-react";
+import { Loader2, SquarePen } from "lucide-react";
 import { BrandService } from "@/services/OrderManagement/BrandService";
 import type { ProductType } from "@/TypeDefinitions/Product";
 import { ProductService } from "@/services/OrderManagement/ProductService";
@@ -58,6 +58,13 @@ const Product = () => {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: (id: string[]) => ProductService.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["payments"] });
+    },
+  });
+
   const handleUpdate = (updatedData: Partial<UpdateProductDto>) => {
     if (!selectedProduct) return;
     mutation.mutate({
@@ -67,8 +74,7 @@ const Product = () => {
   };
 
   const handleDelete = async (id: string[]) => {
-    await ProductService.delete(id);
-    queryClient.invalidateQueries({ queryKey: ["products"] });
+    deleteMutation.mutate(id);
   };
 
   const handleAdd = (data: Partial<UpdateProductDto>) => {
@@ -142,8 +148,16 @@ const Product = () => {
     products && setProductData(products);
   }, [products]);
 
+  const isLoading =
+    mutation.isPending || addMutation.isPending || deleteMutation.isPending;
+
   return (
     <div>
+      {isLoading && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/50 backdrop-blur-sm rounded-lg">
+          <Loader2 className="animate-spin h-8 w-8 text-primary" />
+        </div>
+      )}
       <h1 className="heading-font">Products</h1>
 
       <DemoPage

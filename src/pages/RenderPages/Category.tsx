@@ -10,7 +10,7 @@ import {
   updateCategoryFields,
   type UpdateCategoryDto,
 } from "@/TypeDefinitions/ModalType";
-import { SquarePen } from "lucide-react";
+import { Loader2, SquarePen } from "lucide-react";
 
 // Define columns dynamically for category data
 
@@ -44,6 +44,13 @@ const Category = () => {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: (id: string[]) => CategoryService.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["payments"] });
+    },
+  });
+
   const handleUpdate = (updatedData: Partial<UpdateCategoryDto>) => {
     if (!selectedCategory) return;
     mutation.mutate({
@@ -53,8 +60,7 @@ const Category = () => {
   };
 
   const handleDelete = async (id: string[]) => {
-    await CategoryService.delete(id);
-    queryClient.invalidateQueries({ queryKey: ["payments"] });
+    deleteMutation.mutate(id);
   };
 
   const handleAdd = (data: Partial<UpdateCategoryDto>) => {
@@ -138,8 +144,16 @@ const Category = () => {
     payments && setCategoryData(flatAllNodes(payments));
   }, [payments]);
 
+  const isLoading =
+    mutation.isPending || addMutation.isPending || deleteMutation.isPending;
+
   return (
     <div>
+      {isLoading && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/50 backdrop-blur-sm rounded-lg">
+          <Loader2 className="animate-spin h-8 w-8 text-primary" />
+        </div>
+      )}
       <h1 className="heading-font">Category</h1>
 
       <DemoPage

@@ -8,7 +8,7 @@ import {
   updateBrandFields,
   type UpdateBrandDto,
 } from "@/TypeDefinitions/ModalType";
-import { SquarePen } from "lucide-react";
+import { Loader2, SquarePen } from "lucide-react";
 import type { BrandsType } from "@/TypeDefinitions/Brands";
 import { BrandService } from "@/services/OrderManagement/BrandService";
 import { ProductService } from "@/services/OrderManagement/ProductService";
@@ -51,6 +51,13 @@ const Brands = () => {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: (id: string[]) => BrandService.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["payments"] });
+    },
+  });
+
   const handleUpdate = (updatedData: Partial<UpdateBrandDto>) => {
     if (!selectedBrand) return;
     mutation.mutate({
@@ -60,8 +67,7 @@ const Brands = () => {
   };
 
   const handleDelete = async (id: string[]) => {
-    await BrandService.delete(id);
-    queryClient.invalidateQueries({ queryKey: ["payments"] });
+    deleteMutation.mutate(id);
   };
 
   const handleAdd = (data: Partial<UpdateBrandDto>) => {
@@ -157,8 +163,16 @@ const Brands = () => {
     payments && setBrandData(payments);
   }, [payments]);
 
+  const isLoading =
+    mutation.isPending || addMutation.isPending || deleteMutation.isPending;
+
   return (
     <div>
+      {isLoading && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/50 backdrop-blur-sm rounded-lg">
+          <Loader2 className="animate-spin h-8 w-8 text-primary" />
+        </div>
+      )}
       <h1 className="heading-font">Brands</h1>
 
       <DemoPage
