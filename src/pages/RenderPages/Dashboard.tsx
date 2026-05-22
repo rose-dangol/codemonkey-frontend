@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -72,16 +72,46 @@ export interface OrderDataPoint {
   cancelled: number;
 }
 
-// ─── Static Data ──────────────────────────────────────────────────────────────
+// ─── Dashboard Props ──────────────────────────────────────────────────────────
 
-// const METRICS: DashboardMetrics = {
-//   totalSales: 3624,
-//   totalProfit: 1200,
-//   totalOrders: 3,
-//   cancelledOrder: 0,
-//   conversionRate: 100,
-//   profitMargin: 33.11,
-// };
+export interface DashboardProps {
+  /** ISO string from external date range picker (e.g. shadcn DateRangePicker) */
+  startDate?: string;
+  /** ISO string from external date range picker */
+  endDate?: string;
+}
+
+// ─── Granularity ──────────────────────────────────────────────────────────────
+
+export type Granularity = "day" | "month" | "year";
+
+function detectGranularity(start: Date, end: Date): Granularity {
+  const diffDays = (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
+  if (diffDays <= 31) return "day";
+  if (diffDays <= 365) return "month";
+  return "year";
+}
+
+function formatLabel(dateStr: string, granularity: Granularity): string {
+  const date = new Date(dateStr);
+
+  if (isNaN(date.getTime())) return "";
+
+  if (granularity === "year") {
+    return dateStr.slice(0, 4);
+  }
+
+  if (granularity === "month") {
+    return date.toLocaleString("en-US", { month: "short" });
+  }
+
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+}
+
+// ─── Static / Fallback Data ───────────────────────────────────────────────────
 
 const ACTIVE_USERS_STATIC = 1482;
 
@@ -286,40 +316,11 @@ const ChartCard = ({ title, subtitle, children }: ChartCardProps) => (
   </div>
 );
 
-// ─── Chart Data ───────────────────────────────────────────────────────────────
+// ─── Chart Shared Config ──────────────────────────────────────────────────────
 
 const CHART_TICK = "#9A8C98";
 const CHART_GRID = "rgba(74,78,105,0.06)";
 const CHART_LEGEND = "#4A4E69";
-
-const revenueChartData = {
-  labels: REVENUE_DATA.map((d) => d.month),
-  datasets: [
-    {
-      label: "Revenue",
-      data: REVENUE_DATA.map((d) => d.revenue),
-      backgroundColor: (ctx: any) => {
-        const { ctx: c, chartArea } = ctx.chart;
-        if (!chartArea) return "rgba(5,107,106,0.7)";
-        const g = c.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-        g.addColorStop(0, "rgba(5,107,106,0.85)");
-        g.addColorStop(1, "rgba(5,107,106,0.25)");
-        return g;
-      },
-      borderRadius: 8,
-      borderSkipped: false,
-      barThickness: 18,
-    },
-    {
-      label: "Profit",
-      data: REVENUE_DATA.map((d) => d.profit),
-      backgroundColor: "rgba(255,203,68,0.75)",
-      borderRadius: 8,
-      borderSkipped: false,
-      barThickness: 12,
-    },
-  ],
-};
 
 const revenueChartOptions = {
   responsive: true,
@@ -421,28 +422,6 @@ const userGrowthChartOptions = {
   },
 };
 
-const orderChartData = {
-  labels: ORDER_DATA.map((d) => d.day),
-  datasets: [
-    {
-      label: "Orders",
-      data: ORDER_DATA.map((d) => d.orders),
-      backgroundColor: "rgba(5,107,106,0.8)",
-      borderRadius: 7,
-      borderSkipped: false,
-      barThickness: 22,
-    },
-    {
-      label: "Cancelled",
-      data: ORDER_DATA.map((d) => d.cancelled),
-      backgroundColor: "rgba(244,63,94,0.7)",
-      borderRadius: 7,
-      borderSkipped: false,
-      barThickness: 22,
-    },
-  ],
-};
-
 const orderChartOptions = {
   responsive: true,
   maintainAspectRatio: false,
@@ -484,9 +463,123 @@ const donutOptions = {
 
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 
-export default function Dashboard() {
+export default function Dashboard({
+  startDate: extStart,
+  endDate: extEnd,
+}: DashboardProps) {
   const [greeting, setGreeting] = useState("Good morning");
   const [currentTime, setCurrentTime] = useState("");
+
+  // ── Default range: Jan 1 of current year → today (used when no picker value) ──
+  const [defaultStart, defaultEnd] = useMemo(() => {
+    const today = new Date();
+    return [
+      new Date(today.getFullYear(), 0, 1).toISOString(),
+      today.toISOString(),
+    ];
+  }, []);
+
+  // ── Use external picker dates if provided, otherwise fall back to default ──
+  const [startDate, setStartDate] = useState(extStart ?? defaultStart);
+  const [endDate, setEndDate] = useState(extEnd ?? defaultEnd);
+
+  useEffect(() => {
+    if (extStart) setStartDate(extStart);
+  }, [extStart]);
+
+  useEffect(() => {
+    if (extEnd) setEndDate(extEnd);
+  }, [extEnd]);
+
+  const granularity = useMemo<Granularity>(
+    () => detectGranularity(new Date(startDate), new Date(endDate)),
+    [startDate, endDate],
+  );
+
+  // ── Revenue chart query — reruns whenever dates or granularity change ──
+  const { data: revData } = useQuery({
+    queryKey: ["revenue-chart", startDate, endDate, granularity],
+    queryFn: () => saleService.getRevenueChart(startDate, endDate, granularity),
+    enabled: !!startDate && !!endDate,
+  });
+
+  // ── Build revenue chart data dynamically ──
+  const revenueChartData = useMemo(() => {
+    const apiData = (revData ?? []).map((item: any) => ({
+      label: item[granularity] ?? "", // THIS IS THE FUCKINGGG BUGGG DONTTT TOUCH THIS PART I WASTED MY PRECIOUS 2 HOURS ON THIS!!!
+      revenue: item.revenue,
+      profit: item.profit,
+    }));
+
+    const displayData =
+      apiData.length > 0
+        ? apiData
+        : REVENUE_DATA.map((d) => ({
+            label: d.month,
+            revenue: d.revenue,
+            profit: d.profit,
+          }));
+
+    return {
+      labels: displayData.map((d: any) => d.label),
+      datasets: [
+        {
+          label: "Revenue",
+          data: displayData.map((d: any) => d.revenue),
+          backgroundColor: (ctx: any) => {
+            const { ctx: c, chartArea } = ctx.chart;
+            if (!chartArea) return "rgba(5,107,106,0.7)";
+
+            const g = c.createLinearGradient(
+              0,
+              chartArea.top,
+              0,
+              chartArea.bottom,
+            );
+            g.addColorStop(0, "rgba(5,107,106,0.85)");
+            g.addColorStop(1, "rgba(5,107,106,0.25)");
+            return g;
+          },
+          borderRadius: 8,
+          borderSkipped: false,
+          barThickness: 18,
+        },
+        {
+          label: "Profit",
+          data: displayData.map((d: any) => d.profit),
+          backgroundColor: "rgba(255,203,68,0.75)",
+          borderRadius: 8,
+          borderSkipped: false,
+          barThickness: 12,
+        },
+      ],
+    };
+  }, [revData, granularity]);
+
+  // ── Revenue chart subtitle reflects the active date range ──
+  const revenueSubtitle = useMemo(() => {
+    const fmt = (iso?: string | Date | null) => {
+      if (!iso) return "";
+
+      const d = new Date(iso);
+      if (isNaN(d.getTime())) return "";
+
+      return d.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+    };
+
+    const granularityLabel =
+      granularity === "day"
+        ? "Daily"
+        : granularity === "month"
+          ? "Monthly"
+          : "Yearly";
+
+    return `${granularityLabel} revenue vs profit · ${fmt(startDate)} – ${fmt(endDate)}`;
+  }, [startDate, endDate, granularity]);
 
   useEffect(() => {
     const update = () => {
@@ -513,6 +606,29 @@ export default function Dashboard() {
     queryKey: ["payments"],
     queryFn: () => saleService.getAll(),
   });
+
+  const orderChartData = {
+    labels: ORDER_DATA.map((d) => d.day),
+    datasets: [
+      {
+        label: "Orders",
+        data: ORDER_DATA.map((d) => d.orders),
+        backgroundColor: "rgba(5,107,106,0.8)",
+        borderRadius: 7,
+        borderSkipped: false,
+        barThickness: 22,
+      },
+      {
+        label: "Cancelled",
+        data: ORDER_DATA.map((d) => d.cancelled),
+        backgroundColor: "rgba(244,63,94,0.7)",
+        borderRadius: 7,
+        borderSkipped: false,
+        barThickness: 22,
+      },
+    ],
+  };
+
   const conversionDonutData = {
     labels: ["Converted", "Remaining"],
     datasets: [
@@ -614,21 +730,6 @@ export default function Dashboard() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <div className="bg-secondary border-theme flex items-center gap-2 rounded-full px-4 py-2 shadow-sm text-sm description-text">
-            <svg
-              className="w-4 h-4 sub-text"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-              <line x1="16" y1="2" x2="16" y2="6" />
-              <line x1="8" y1="2" x2="8" y2="6" />
-              <line x1="3" y1="10" x2="21" y2="10" />
-            </svg>
-            Aug 2024
-          </div>
           <button className="action heading-font flex items-center gap-1.5 text-sm font-semibold rounded-full px-4 py-2 shadow-sm transition-colors duration-200">
             <svg
               className="w-4 h-4"
@@ -655,10 +756,56 @@ export default function Dashboard() {
       {/* ── Revenue & User Growth ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
         <div className="lg:col-span-2">
-          <ChartCard
-            title="Revenue Overview"
-            subtitle="Monthly revenue vs profit — Aug 2024"
-          >
+          <div className="bg-secondary border-theme flex flex-col sm:flex-row items-center gap-2 rounded-2xl sm:rounded-full px-4 py-2 shadow-sm text-sm description-text">
+            <div className="flex items-center gap-2">
+              <svg
+                className="w-4 h-4 sub-text"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                <line x1="16" y1="2" x2="16" y2="6" />
+                <line x1="8" y1="2" x2="8" y2="6" />
+                <line x1="3" y1="10" x2="21" y2="10" />
+              </svg>
+              <span className="sub-text text-xs font-semibold uppercase tracking-wider">
+                Range:
+              </span>
+            </div>
+            <div className="flex items-center gap-1">
+              <input
+                type="date"
+                value={startDate.slice(0, 10)}
+                onChange={(e) => {
+                  if (e.target.value) {
+                    setStartDate(
+                      new Date(e.target.value + "T00:00:00").toISOString(),
+                    );
+                  }
+                }}
+                className="bg-transparent border-0 outline-none focus:outline-none focus:ring-0 p-0 text-xs font-bold description-text cursor-pointer w-[105px]"
+                style={{ colorScheme: "dark" }}
+              />
+              <span className="sub-text text-xs px-1">—</span>
+              <input
+                type="date"
+                value={endDate.slice(0, 10)}
+                onChange={(e) => {
+                  if (e.target.value) {
+                    setEndDate(
+                      new Date(e.target.value + "T23:59:59").toISOString(),
+                    );
+                  }
+                }}
+                className="bg-transparent border-0 outline-none focus:outline-none focus:ring-0 p-0 text-xs font-bold description-text cursor-pointer w-[105px]"
+                style={{ colorScheme: "dark" }}
+              />
+            </div>
+          </div>
+          {/* subtitle now reflects the active date range + granularity */}
+          <ChartCard title="Revenue Overview" subtitle={revenueSubtitle}>
             <div style={{ height: 260 }}>
               <Bar data={revenueChartData} options={revenueChartOptions} />
             </div>
@@ -780,7 +927,6 @@ export default function Dashboard() {
           </div>
         ))}
       </div>
-
     </div>
   );
 }
