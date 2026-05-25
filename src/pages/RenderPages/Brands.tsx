@@ -26,7 +26,7 @@ const Brands = () => {
   const queryClient = useQueryClient();
 
   const { data: payments } = useQuery({
-    queryKey: ["payments"],
+    queryKey: ["brands"],
     queryFn: () => BrandService.getAll(),
   });
 
@@ -38,7 +38,7 @@ const Brands = () => {
   const mutation = useMutation({
     mutationFn: (data: UpdateBrandDto) => BrandService.update(data.id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["payments"] });
+      queryClient.invalidateQueries({ queryKey: ["brands"] });
       // toast.success("Category updated successfully");
     },
   });
@@ -46,7 +46,7 @@ const Brands = () => {
   const addMutation = useMutation({
     mutationFn: (data: UpdateBrandDto) => BrandService.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["payments"] });
+      queryClient.invalidateQueries({ queryKey: ["brands"] });
       // toast.success("Category updated successfully");
     },
   });

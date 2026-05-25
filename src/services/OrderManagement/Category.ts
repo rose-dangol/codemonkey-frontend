@@ -1,6 +1,5 @@
 import api from "@/api/ApiUrl";
 import type { UpdateCategoryDto } from "@/TypeDefinitions/ModalType";
-import { data } from "react-router-dom";
 import { toast } from "react-toastify";
 
 export const CategoryService = {
