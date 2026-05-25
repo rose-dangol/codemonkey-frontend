@@ -15,7 +15,7 @@ export type modalType = {
   saveLocalStorage?: (data: any) => void;
 };
 
-export type GetModalProps<T> = {
+export type GetModalProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   id?: string | number | null;
@@ -111,8 +111,8 @@ export type UpdateBrandDto = {
 };
 
 export const updateBrandFields = (
-  allItems?: BrandsType[],
-  currentId?: string,
+  _allItems?: BrandsType[],
+  _currentId?: string,
   allProducts?: ProductType[],
 ): UpdateField<UpdateBrandDto>[] => [
   {
@@ -223,7 +223,7 @@ export const updateProductFields = (
 };
 
 export const updateAttributeDefinitionFields = (
-  currentId?: string,
+  _currentId?: string,
 ): UpdateField<AttributeDefinitionType>[] => {
   return [
     {
@@ -242,7 +242,7 @@ export const updateAttributeDefinitionFields = (
 };
 
 export const updateCogsDefinitionFields = (
-  currentId?: string,
+  _currentId?: string,
 ): UpdateField<CogsDefinitionType>[] => {
   return [
     {
@@ -262,7 +262,7 @@ export const updateCogsDefinitionFields = (
 
 export const updateProductVariantFields = (
   product?: ProductType[],
-  attributes?: Attributes[],
+  _attributes?: Attributes[],
   cogsData?: CogsDefinitionType[],
 
   attributeDefinitions?: AttributeDefinitionType[],

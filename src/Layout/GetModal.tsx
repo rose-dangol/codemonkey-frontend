@@ -10,13 +10,13 @@ import type { GetModalProps } from "@/TypeDefinitions/ModalType";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
-export function GetModal<T>({
+export function GetModal({
   open,
   onOpenChange,
   id,
   endpoint,
   title = "Details",
-}: GetModalProps<T>) {
+}: GetModalProps) {
   const { data: ModalData } = useQuery({
     queryKey: [title, id],
     queryFn: () => fetchData(),

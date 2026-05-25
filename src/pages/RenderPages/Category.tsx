@@ -23,7 +23,7 @@ const Category = () => {
   const queryClient = useQueryClient();
 
   const { data: payments } = useQuery({
-    queryKey: ["payments"],
+    queryKey: ["categories"],
     queryFn: () => CategoryService.getAll(),
   });
 
@@ -31,7 +31,7 @@ const Category = () => {
     mutationFn: (data: UpdateCategoryDto) =>
       CategoryService.update(data.id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["payments"] });
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
       // toast.success("Category updated successfully");
     },
   });
@@ -39,7 +39,7 @@ const Category = () => {
   const addMutation = useMutation({
     mutationFn: (data: UpdateCategoryDto) => CategoryService.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["payments"] });
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
       // toast.success("Category updated successfully");
     },
   });

@@ -14,6 +14,8 @@ import AttributeDefinitions from "@/pages/RenderPages/AttributeDefinitions";
 import CogsDefinitions from "@/pages/RenderPages/CogsDefinition";
 import NotFound from "@/pages/Fallback";
 import Dashboard from "../pages/RenderPages/Dashboard";
+import OrderAnalytics from "@/pages/RenderPages/OrderAnalytics";
+import OrderDetail from "@/pages/DetailPages/OrderDetail";
 
 const Router = () => {
   return (
@@ -27,6 +29,7 @@ const Router = () => {
         <Route element={<AppLayout />}>
           <Route path="/home" element={<Homepage />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/ordermgmt/overview" element={<OrderAnalytics />} />
           <Route path="/ordermgmt/category" element={<Category />} />
           <Route path="/ordermgmt/brands" element={<Brands />} />
           <Route path="/ordermgmt/products" element={<Product />} />
@@ -42,6 +45,12 @@ const Router = () => {
             path="/ordermgmt/cogsdefinitions"
             element={<CogsDefinitions />}
           />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route
+            path="/ordermgmt/orderanalytics"
+            element={<OrderAnalytics />}
+          />
+          <Route path="/order/detail/:id" element={<OrderDetail />} />
         </Route>
       </Route>
       <Route path="*" element={<NotFound />} />

@@ -29,7 +29,7 @@ const Product = () => {
   });
 
   const { data: brands } = useQuery({
-    queryKey: ["payments"],
+    queryKey: ["brands"],
     queryFn: () => BrandService.getAll(),
   });
 

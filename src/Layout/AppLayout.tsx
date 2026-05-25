@@ -16,7 +16,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import {
   ChevronDown,
   HomeIcon,
-  icons,
   LeafyGreenIcon,
   LogOutIcon,
   ProjectorIcon,
@@ -24,92 +23,113 @@ import {
   SettingsIcon,
   Square,
   TrophyIcon,
+  type LucideIcon,
 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Modal } from "./Modal";
 import "../App.css";
 import { Collapsible, CollapsibleTrigger } from "@/components/ui/collapsible";
 
+type SidebarChild = {
+  title: string;
+  icon: LucideIcon;
+  url?: string;
+  action?: () => void | Promise<void>;
+};
+
+type SidebarItem = SidebarChild & {
+  children?: SidebarChild[];
+};
+
 export default function AppLayout() {
   const [openModal, setOpenModal] = useState(false);
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   const location = useLocation();
   const lastSegment = location.pathname.split("/").filter(Boolean).pop();
   const navigate = useNavigate();
   const { logout } = useAuth();
 
-  const items = [
-    {
-      title: "Dashboard",
-      icon: HomeIcon,
-      url: "/dashboard",
-    },
-    {
-      title: "Order Management",
-      icon: HomeIcon,
-      children: [
-        {
-          title: "Overview",
-          url: "/ordermgmt/overview",
-          icon: Square,
-        },
-        {
-          title: "Category",
-          url: "/ordermgmt/category",
-          icon: LeafyGreenIcon,
-        },
-        {
-          title: "Brands",
-          url: "/ordermgmt/brands",
-          icon: ProjectorIcon,
-        },
-        {
-          title: "Products",
-          url: "/ordermgmt/products",
-          icon: TrophyIcon,
-        },
-        {
-          title: "Product Variant",
-          url: "/ordermgmt/productvariant",
-          icon: TrophyIcon,
-        },
-        {
-          title: "Attribute Definitions",
-          url: "/ordermgmt/attributedeinitions",
-          icon: SettingsIcon,
-        },
-        {
-          title: "Cogs Definition",
-          url: "/ordermgmt/cogsdefinitions",
-          icon: SettingsIcon,
-        },
-      ],
-    },
-
-    {
-      title: "Settings",
-      icon: SettingsIcon,
-      children: [
-        // {
-        //   title: "Settings",
-        //   url: "/settings",
-        //   icon: SettingsIcon,
-        // },
-        {
-          title: "Logout",
-          icon: LogOutIcon,
-          action: async () => {
-            await logout();
-            navigate("/login");
+  const items = useMemo<SidebarItem[]>(
+    () => [
+      {
+        title: "Dashboard",
+        icon: HomeIcon,
+        url: "/dashboard",
+      },
+      {
+        title: "Order Management",
+        icon: HomeIcon,
+        children: [
+          {
+            title: "Overview",
+            url: "/ordermgmt/overview",
+            icon: Square,
           },
-        },
-        {
-          title: "Theme Select",
-          icon: Settings,
-          action: () => setOpenModal(true),
-        },
-      ],
-    },
-  ];
+          {
+            title: "Category",
+            url: "/ordermgmt/category",
+            icon: LeafyGreenIcon,
+          },
+          {
+            title: "Brands",
+            url: "/ordermgmt/brands",
+            icon: ProjectorIcon,
+          },
+          {
+            title: "Products",
+            url: "/ordermgmt/products",
+            icon: TrophyIcon,
+          },
+          {
+            title: "Product Variant",
+            url: "/ordermgmt/productvariant",
+            icon: TrophyIcon,
+          },
+          {
+            title: "Attribute Definitions",
+            url: "/ordermgmt/attributedeinitions",
+            icon: SettingsIcon,
+          },
+          {
+            title: "Cogs Definition",
+            url: "/ordermgmt/cogsdefinitions",
+            icon: SettingsIcon,
+          },
+          {
+            title: "Order Analytics",
+            url: "/ordermgmt/orderanalytics",
+            icon: SettingsIcon,
+          },
+        ],
+      },
+
+      {
+        title: "Settings",
+        icon: SettingsIcon,
+        children: [
+          // {
+          //   title: "Settings",
+          //   url: "/settings",
+          //   icon: SettingsIcon,
+          // },
+          {
+            title: "Logout",
+            icon: LogOutIcon,
+            action: async () => {
+              await logout();
+              navigate("/login");
+            },
+          },
+          {
+            title: "Theme Select",
+            icon: Settings,
+            action: () => setOpenModal(true),
+          },
+        ],
+      },
+    ],
+    [logout, navigate],
+  );
 
   const sentObject = [
     {
@@ -187,6 +207,21 @@ export default function AppLayout() {
       Action: "#FFD35A",
       State: "#19A7A5",
     },
+    {
+      title: "AdminNeutral",
+      heading: "#1a1a2e",
+      description: "#4A4E69",
+      subText: "#9A8C98",
+      backgroundSecondary: "#FFFFFF",
+      backgroundPrimary: "#f7f7f8",
+      action: "#7c6fd4",
+      actionHover: "#6b5ec7",
+      state: "#2d6a4f",
+      stateLight: "rgba(45,106,79,0.10)",
+      actionLight: "rgba(124,111,212,0.12)",
+      border: "rgba(74,78,105,0.11)",
+      shadow: "rgba(74,78,105,0.07)",
+    },
   ];
 
   const submenuVariants = {
@@ -216,8 +251,6 @@ export default function AppLayout() {
     localStorage.setItem("theme", JSON.stringify(data));
   };
 
-  const stored = localStorage.getItem("theme");
-
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full bg-primary ">
@@ -231,9 +264,7 @@ export default function AppLayout() {
               <SidebarGroupContent>
                 <SidebarMenu>
                   {items.map((item) => {
-                    const [open, setOpen] = useState(false);
-
-                    if (!item.children) {
+                    if (!item.children && item.url) {
                       return (
                         <SidebarMenuItem key={item.title} className="w-full">
                           <SidebarMenuButton
@@ -263,11 +294,27 @@ export default function AppLayout() {
                       );
                     }
 
+                    if (!item.children) {
+                      return null;
+                    }
+
+                    const children = item.children;
+                    const isActiveGroup = children.some(
+                      (child) =>
+                        child.url && location.pathname.startsWith(child.url),
+                    );
+                    const open = openGroups[item.title] ?? isActiveGroup;
+
                     return (
                       <Collapsible
                         key={item.title}
                         open={open}
-                        onOpenChange={setOpen}
+                        onOpenChange={(nextOpen) =>
+                          setOpenGroups((current) => ({
+                            ...current,
+                            [item.title]: nextOpen,
+                          }))
+                        }
                       >
                         <SidebarMenuItem>
                           <CollapsibleTrigger asChild>
@@ -302,7 +349,7 @@ export default function AppLayout() {
                                 className="overflow-hidden"
                               >
                                 <SidebarMenu className="ml-6 mt-1">
-                                  {item.children.map((child) => (
+                                  {children.map((child) => (
                                     <SidebarMenuItem
                                       key={child.title}
                                       className="w-[88%]"
@@ -366,7 +413,7 @@ export default function AppLayout() {
         <div className="flex-1">
           <SidebarTrigger />
           <div className="px-10">
-            <Outlet />
+            <Outlet key={location.pathname} />
           </div>
         </div>
       </div>

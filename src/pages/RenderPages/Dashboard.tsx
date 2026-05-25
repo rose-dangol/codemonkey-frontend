@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -15,6 +15,8 @@ import {
 import { Bar, Line, Doughnut } from "react-chartjs-2";
 import { useQuery } from "@tanstack/react-query";
 import { saleService } from "@/services/Metrics/saleService";
+import DateRangePicker from "@/components/DateRangePicker";
+import type { DateRangeData, Granularity } from "@/components/DateRangePicker";
 
 ChartJS.register(
   CategoryScale,
@@ -29,104 +31,22 @@ ChartJS.register(
   Filler,
 );
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-export interface DashboardMetrics {
-  totalSales: number;
-  totalProfit: number;
-  totalOrders: number;
-  cancelledOrder: number;
-  conversionRate: number;
-  profitMargin: number;
-}
-
-export interface KPICardProps {
-  label: string;
-  value: string | number;
-  sub?: string;
-  badge?: string;
-  badgeVariant?: "state" | "action" | "muted" | "danger";
-  icon: React.ReactNode;
-  iconVariant?: "state" | "action" | "muted";
-}
-
-export interface ChartCardProps {
-  title: string;
-  subtitle?: string;
-  children: React.ReactNode;
-}
-
-export interface RevenueDataPoint {
-  month: string;
-  revenue: number;
-  profit: number;
-}
-export interface UserGrowthDataPoint {
-  month: string;
-  users: number;
-  newUsers: number;
-}
-export interface OrderDataPoint {
-  day: string;
-  orders: number;
-  cancelled: number;
-}
-
-// ─── Dashboard Props ──────────────────────────────────────────────────────────
-
-export interface DashboardProps {
-  /** ISO string from external date range picker (e.g. shadcn DateRangePicker) */
-  startDate?: string;
-  /** ISO string from external date range picker */
-  endDate?: string;
-}
-
-// ─── Granularity ──────────────────────────────────────────────────────────────
-
-export type Granularity = "day" | "month" | "year";
-
-function detectGranularity(start: Date, end: Date): Granularity {
-  const diffDays = (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
-  if (diffDays <= 31) return "day";
-  if (diffDays <= 365) return "month";
-  return "year";
-}
-
-function formatLabel(dateStr: string, granularity: Granularity): string {
-  const date = new Date(dateStr);
-
-  if (isNaN(date.getTime())) return "";
-
-  if (granularity === "year") {
-    return dateStr.slice(0, 4);
-  }
-
-  if (granularity === "month") {
-    return date.toLocaleString("en-US", { month: "short" });
-  }
-
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
-}
-
-// ─── Static / Fallback Data ───────────────────────────────────────────────────
+// ─── Fallback / static data ───────────────────────────────────────────────────
 
 const ACTIVE_USERS_STATIC = 1482;
 
-const REVENUE_DATA: RevenueDataPoint[] = [
-  { month: "Jan", revenue: 2100, profit: 640 },
-  { month: "Feb", revenue: 2850, profit: 810 },
-  { month: "Mar", revenue: 2400, profit: 720 },
-  { month: "Apr", revenue: 3100, profit: 960 },
-  { month: "May", revenue: 2700, profit: 800 },
-  { month: "Jun", revenue: 3400, profit: 1050 },
-  { month: "Jul", revenue: 3200, profit: 980 },
-  { month: "Aug", revenue: 3624, profit: 1200 },
+const REVENUE_FALLBACK = [
+  { label: "Jan", revenue: 2100, profit: 640 },
+  { label: "Feb", revenue: 2850, profit: 810 },
+  { label: "Mar", revenue: 2400, profit: 720 },
+  { label: "Apr", revenue: 3100, profit: 960 },
+  { label: "May", revenue: 2700, profit: 800 },
+  { label: "Jun", revenue: 3400, profit: 1050 },
+  { label: "Jul", revenue: 3200, profit: 980 },
+  { label: "Aug", revenue: 3624, profit: 1200 },
 ];
 
-const USER_GROWTH_DATA: UserGrowthDataPoint[] = [
+const USER_GROWTH_DATA = [
   { month: "Jan", users: 800, newUsers: 120 },
   { month: "Feb", users: 950, newUsers: 150 },
   { month: "Mar", users: 1050, newUsers: 100 },
@@ -137,7 +57,7 @@ const USER_GROWTH_DATA: UserGrowthDataPoint[] = [
   { month: "Aug", users: 1482, newUsers: 72 },
 ];
 
-const ORDER_DATA: OrderDataPoint[] = [
+const ORDER_DATA = [
   { day: "Mon", orders: 12, cancelled: 1 },
   { day: "Tue", orders: 18, cancelled: 0 },
   { day: "Wed", orders: 9, cancelled: 2 },
@@ -146,6 +66,89 @@ const ORDER_DATA: OrderDataPoint[] = [
   { day: "Sat", orders: 7, cancelled: 0 },
   { day: "Sun", orders: 5, cancelled: 0 },
 ];
+
+// ─── Chart helpers ────────────────────────────────────────────────────────────
+
+const CHART_TICK = "#9A8C98";
+const CHART_GRID = "rgba(74,78,105,0.06)";
+const CHART_LEGEND = "#4A4E69";
+
+function buildRevenueChartData(
+  apiData: any[] | undefined,
+  granularity: Granularity,
+) {
+  const rows =
+    apiData && apiData.length > 0
+      ? apiData.map((item: any) => ({
+          label: item[granularity] ?? "",
+          revenue: item.revenue,
+          profit: item.profit,
+        }))
+      : REVENUE_FALLBACK;
+
+  return {
+    labels: rows.map((r) => r.label),
+    datasets: [
+      {
+        label: "Revenue",
+        data: rows.map((r) => r.revenue),
+        backgroundColor: (ctx: any) => {
+          const { ctx: c, chartArea } = ctx.chart;
+          if (!chartArea) return "rgba(5,107,106,0.7)";
+          const g = c.createLinearGradient(
+            0,
+            chartArea.top,
+            0,
+            chartArea.bottom,
+          );
+          g.addColorStop(0, "rgba(5,107,106,0.85)");
+          g.addColorStop(1, "rgba(5,107,106,0.25)");
+          return g;
+        },
+        borderRadius: 8,
+        borderSkipped: false,
+        barThickness: 18,
+      },
+      {
+        label: "Profit",
+        data: rows.map((r) => r.profit),
+        backgroundColor: "rgba(255,203,68,0.75)",
+        borderRadius: 8,
+        borderSkipped: false,
+        barThickness: 12,
+      },
+    ],
+  };
+}
+
+function buildOrderChartData(
+  apiData: any[] | undefined,
+  granularity: Granularity,
+) {
+  const rows = apiData ?? ORDER_DATA;
+
+  return {
+    labels: rows.map((r) => r[granularity]),
+    datasets: [
+      {
+        label: "Orders",
+        data: rows.map((r) => r.orders),
+        backgroundColor: "rgba(255,203,68,0.75)",
+        borderRadius: 8,
+        borderSkipped: false,
+        barThickness: 18,
+      },
+      {
+        label: "Cancellations",
+        data: rows.map((r) => r.cancellations),
+        backgroundColor: "rgba(239,68,68,0.75)",
+        borderRadius: 8,
+        borderSkipped: false,
+        barThickness: 12,
+      },
+    ],
+  };
+}
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 
@@ -238,7 +241,7 @@ const IconMargin = () => (
   </svg>
 );
 
-// ─── Badge ────────────────────────────────────────────────────────────────────
+// ─── Small UI pieces ──────────────────────────────────────────────────────────
 
 const Badge = ({
   children,
@@ -262,8 +265,6 @@ const Badge = ({
   );
 };
 
-// ─── KPI Card ─────────────────────────────────────────────────────────────────
-
 const KPICard = ({
   label,
   value,
@@ -272,13 +273,12 @@ const KPICard = ({
   badgeVariant = "state",
   icon,
   iconVariant = "state",
-}: KPICardProps) => {
+}: any) => {
   const iconCls = {
     state: "state-color text-white",
     action: "action text-black",
     muted: "hover-color description-text",
-  }[iconVariant];
-
+  }[iconVariant as string];
   return (
     <div className="card p-5 flex flex-col gap-3 transition-shadow duration-300">
       <div className="flex items-center justify-between">
@@ -302,9 +302,15 @@ const KPICard = ({
   );
 };
 
-// ─── Chart Card ───────────────────────────────────────────────────────────────
-
-const ChartCard = ({ title, subtitle, children }: ChartCardProps) => (
+const ChartCard = ({
+  title,
+  subtitle,
+  children,
+}: {
+  title: string;
+  subtitle?: string;
+  children: React.ReactNode;
+}) => (
   <div className="card p-5">
     <div className="flex items-start justify-between mb-4">
       <div>
@@ -316,15 +322,12 @@ const ChartCard = ({ title, subtitle, children }: ChartCardProps) => (
   </div>
 );
 
-// ─── Chart Shared Config ──────────────────────────────────────────────────────
-
-const CHART_TICK = "#9A8C98";
-const CHART_GRID = "rgba(74,78,105,0.06)";
-const CHART_LEGEND = "#4A4E69";
+// ─── Chart options ────────────────────────────────────────────────────────────
 
 const revenueChartOptions = {
   responsive: true,
   maintainAspectRatio: false,
+  animation: { duration: 300 },
   plugins: {
     legend: {
       position: "top" as const,
@@ -336,7 +339,15 @@ const revenueChartOptions = {
         pointStyle: "circle" as const,
       },
     },
-    tooltip: { mode: "index" as const, intersect: false, cornerRadius: 10 },
+    tooltip: {
+      mode: "index" as const,
+      intersect: false,
+      cornerRadius: 10,
+      animation: {
+        duration: 80,
+        easing: "easeOutCubic" as const,
+      },
+    },
   },
   scales: {
     x: {
@@ -385,11 +396,11 @@ const userGrowthChartData = {
       borderWidth: 2,
       tension: 0.45,
       fill: false,
+      borderDash: [5, 3],
       pointRadius: 3,
       pointBackgroundColor: "#FFCB44",
       pointBorderColor: "#fff",
       pointBorderWidth: 2,
-      borderDash: [5, 3],
     },
   ],
 };
@@ -425,6 +436,7 @@ const userGrowthChartOptions = {
 const orderChartOptions = {
   responsive: true,
   maintainAspectRatio: false,
+  animation: { duration: 300 },
   plugins: {
     legend: {
       position: "top" as const,
@@ -436,7 +448,15 @@ const orderChartOptions = {
         pointStyle: "circle" as const,
       },
     },
-    tooltip: { mode: "index" as const, intersect: false, cornerRadius: 10 },
+    tooltip: {
+      mode: "index" as const,
+      intersect: false,
+      cornerRadius: 10,
+      animation: {
+        duration: 80,
+        easing: "easeOutCubic" as const,
+      },
+    },
   },
   scales: {
     x: {
@@ -444,9 +464,14 @@ const orderChartOptions = {
       ticks: { color: CHART_TICK, font: { size: 11 } },
     },
     y: {
+      min: 0,
+      suggestedMax: 5,
       grid: { color: CHART_GRID },
-      ticks: { color: CHART_TICK, font: { size: 11 } },
-      max: 30,
+      ticks: {
+        color: CHART_TICK,
+        font: { size: 11 },
+        stepSize: 5,
+      },
     },
   },
 };
@@ -463,124 +488,55 @@ const donutOptions = {
 
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 
-export default function Dashboard({
-  startDate: extStart,
-  endDate: extEnd,
-}: DashboardProps) {
+export default function Dashboard() {
   const [greeting, setGreeting] = useState("Good morning");
   const [currentTime, setCurrentTime] = useState("");
 
-  // ── Default range: Jan 1 of current year → today (used when no picker value) ──
-  const [defaultStart, defaultEnd] = useMemo(() => {
-    const today = new Date();
-    return [
-      new Date(today.getFullYear(), 0, 1).toISOString(),
-      today.toISOString(),
-    ];
-  }, []);
+  const [revenueChartData, setRevenueChartData] = useState(() =>
+    buildRevenueChartData(undefined, "month"),
+  );
+  const [revenueSubtitle, setRevenueSubtitle] = useState("");
 
-  // ── Use external picker dates if provided, otherwise fall back to default ──
-  const [startDate, setStartDate] = useState(extStart ?? defaultStart);
-  const [endDate, setEndDate] = useState(extEnd ?? defaultEnd);
-
-  useEffect(() => {
-    if (extStart) setStartDate(extStart);
-  }, [extStart]);
-
-  useEffect(() => {
-    if (extEnd) setEndDate(extEnd);
-  }, [extEnd]);
-
-  const granularity = useMemo<Granularity>(
-    () => detectGranularity(new Date(startDate), new Date(endDate)),
-    [startDate, endDate],
+  const [orderChartData, setOrderChartData] = useState(() =>
+    buildOrderChartData(undefined, "day"),
   );
 
-  // ── Revenue chart query — reruns whenever dates or granularity change ──
-  const { data: revData } = useQuery({
-    queryKey: ["revenue-chart", startDate, endDate, granularity],
-    queryFn: () => saleService.getRevenueChart(startDate, endDate, granularity),
-    enabled: !!startDate && !!endDate,
-  });
-
-  // ── Build revenue chart data dynamically ──
-  const revenueChartData = useMemo(() => {
-    const apiData = (revData ?? []).map((item: any) => ({
-      label: item[granularity] ?? "", // THIS IS THE FUCKINGGG BUGGG DONTTT TOUCH THIS PART I WASTED MY PRECIOUS 2 HOURS ON THIS!!!
-      revenue: item.revenue,
-      profit: item.profit,
-    }));
-
-    const displayData =
-      apiData.length > 0
-        ? apiData
-        : REVENUE_DATA.map((d) => ({
-            label: d.month,
-            revenue: d.revenue,
-            profit: d.profit,
-          }));
-
-    return {
-      labels: displayData.map((d: any) => d.label),
-      datasets: [
-        {
-          label: "Revenue",
-          data: displayData.map((d: any) => d.revenue),
-          backgroundColor: (ctx: any) => {
-            const { ctx: c, chartArea } = ctx.chart;
-            if (!chartArea) return "rgba(5,107,106,0.7)";
-
-            const g = c.createLinearGradient(
-              0,
-              chartArea.top,
-              0,
-              chartArea.bottom,
-            );
-            g.addColorStop(0, "rgba(5,107,106,0.85)");
-            g.addColorStop(1, "rgba(5,107,106,0.25)");
-            return g;
-          },
-          borderRadius: 8,
-          borderSkipped: false,
-          barThickness: 18,
-        },
-        {
-          label: "Profit",
-          data: displayData.map((d: any) => d.profit),
-          backgroundColor: "rgba(255,203,68,0.75)",
-          borderRadius: 8,
-          borderSkipped: false,
-          barThickness: 12,
-        },
-      ],
+  // ── FIX: Destroy all Chart.js instances on unmount to unblock navigation ──
+  useEffect(() => {
+    return () => {
+      Object.values(ChartJS.instances).forEach((chart) => chart.destroy());
     };
-  }, [revData, granularity]);
+  }, []);
 
-  // ── Revenue chart subtitle reflects the active date range ──
-  const revenueSubtitle = useMemo(() => {
-    const fmt = (iso?: string | Date | null) => {
-      if (!iso) return "";
+  const handleRevenueData = useCallback((result: DateRangeData<any[]>) => {
+    if (result.isLoading) return;
 
-      const d = new Date(iso);
-      if (isNaN(d.getTime())) return "";
+    setRevenueChartData(buildRevenueChartData(result.data, result.granularity));
 
-      return d.toLocaleDateString("en-US", {
+    const fmt = (iso: string) =>
+      new Date(iso).toLocaleDateString("en-US", {
         month: "short",
         day: "numeric",
         year: "numeric",
       });
-    };
 
-    const granularityLabel =
-      granularity === "day"
+    const granLabel =
+      result.granularity === "day"
         ? "Daily"
-        : granularity === "month"
+        : result.granularity === "month"
           ? "Monthly"
           : "Yearly";
+    setRevenueSubtitle(
+      `${granLabel} revenue vs profit · ${fmt(result.startDate)} – ${fmt(result.endDate)}`,
+    );
+  }, []);
 
-    return `${granularityLabel} revenue vs profit · ${fmt(startDate)} – ${fmt(endDate)}`;
-  }, [startDate, endDate, granularity]);
+  const handleOrderData = useCallback((result: DateRangeData<any[]>) => {
+    if (result.isLoading) return;
+    setOrderChartData(buildOrderChartData(result.data, result.granularity));
+  }, []);
 
+  // ── Clock ──────────────────────────────────────────────────────────────────
   useEffect(() => {
     const update = () => {
       const h = new Date().getHours();
@@ -598,36 +554,15 @@ export default function Dashboard({
       );
     };
     update();
-    const id = setInterval(update, 60000);
+    const id = setInterval(update, 60_000);
     return () => clearInterval(id);
   }, []);
 
+  // ── KPI metrics ────────────────────────────────────────────────────────────
   const { data: metricData } = useQuery({
     queryKey: ["payments"],
     queryFn: () => saleService.getAll(),
   });
-
-  const orderChartData = {
-    labels: ORDER_DATA.map((d) => d.day),
-    datasets: [
-      {
-        label: "Orders",
-        data: ORDER_DATA.map((d) => d.orders),
-        backgroundColor: "rgba(5,107,106,0.8)",
-        borderRadius: 7,
-        borderSkipped: false,
-        barThickness: 22,
-      },
-      {
-        label: "Cancelled",
-        data: ORDER_DATA.map((d) => d.cancelled),
-        backgroundColor: "rgba(244,63,94,0.7)",
-        borderRadius: 7,
-        borderSkipped: false,
-        barThickness: 22,
-      },
-    ],
-  };
 
   const conversionDonutData = {
     labels: ["Converted", "Remaining"],
@@ -641,7 +576,7 @@ export default function Dashboard({
     ],
   };
 
-  const kpis: KPICardProps[] = [
+  const kpis = [
     {
       label: "Total Sales",
       value: `$${metricData?.totalSales.toLocaleString()}`,
@@ -729,21 +664,19 @@ export default function Dashboard({
             Here's what's happening with your store today.
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <button className="action heading-font flex items-center gap-1.5 text-sm font-semibold rounded-full px-4 py-2 shadow-sm transition-colors duration-200">
-            <svg
-              className="w-4 h-4"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2.5}
-            >
-              <line x1="12" y1="5" x2="12" y2="19" />
-              <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-            Export Report
-          </button>
-        </div>
+        <button className="action heading-font flex items-center gap-1.5 text-sm font-semibold rounded-full px-4 py-2 shadow-sm transition-colors duration-200">
+          <svg
+            className="w-4 h-4"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2.5}
+          >
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          Export Report
+        </button>
       </div>
 
       {/* ── KPI Grid ── */}
@@ -755,62 +688,22 @@ export default function Dashboard({
 
       {/* ── Revenue & User Growth ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
-        <div className="lg:col-span-2">
-          <div className="bg-secondary border-theme flex flex-col sm:flex-row items-center gap-2 rounded-2xl sm:rounded-full px-4 py-2 shadow-sm text-sm description-text">
-            <div className="flex items-center gap-2">
-              <svg
-                className="w-4 h-4 sub-text"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                <line x1="16" y1="2" x2="16" y2="6" />
-                <line x1="8" y1="2" x2="8" y2="6" />
-                <line x1="3" y1="10" x2="21" y2="10" />
-              </svg>
-              <span className="sub-text text-xs font-semibold uppercase tracking-wider">
-                Range:
-              </span>
-            </div>
-            <div className="flex items-center gap-1">
-              <input
-                type="date"
-                value={startDate.slice(0, 10)}
-                onChange={(e) => {
-                  if (e.target.value) {
-                    setStartDate(
-                      new Date(e.target.value + "T00:00:00").toISOString(),
-                    );
-                  }
-                }}
-                className="bg-transparent border-0 outline-none focus:outline-none focus:ring-0 p-0 text-xs font-bold description-text cursor-pointer w-[105px]"
-                style={{ colorScheme: "dark" }}
-              />
-              <span className="sub-text text-xs px-1">—</span>
-              <input
-                type="date"
-                value={endDate.slice(0, 10)}
-                onChange={(e) => {
-                  if (e.target.value) {
-                    setEndDate(
-                      new Date(e.target.value + "T23:59:59").toISOString(),
-                    );
-                  }
-                }}
-                className="bg-transparent border-0 outline-none focus:outline-none focus:ring-0 p-0 text-xs font-bold description-text cursor-pointer w-[105px]"
-                style={{ colorScheme: "dark" }}
-              />
-            </div>
-          </div>
-          {/* subtitle now reflects the active date range + granularity */}
+        <div className="lg:col-span-2 flex flex-col gap-3">
+          <DateRangePicker<any[]>
+            queryFn={({ startDate, endDate, granularity }) =>
+              saleService.getRevenueChart(startDate, endDate, granularity)
+            }
+            queryKey={["revenue-chart"]}
+            onData={handleRevenueData}
+          />
+
           <ChartCard title="Revenue Overview" subtitle={revenueSubtitle}>
             <div style={{ height: 260 }}>
               <Bar data={revenueChartData} options={revenueChartOptions} />
             </div>
           </ChartCard>
         </div>
+
         <div>
           <ChartCard
             title="User Growth"
@@ -829,6 +722,13 @@ export default function Dashboard({
       {/* ── Orders & Conversion ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
         <div className="lg:col-span-2">
+          <DateRangePicker<any[]>
+            queryFn={({ startDate, endDate, granularity }) =>
+              saleService.getOrderChart(startDate, endDate, granularity)
+            }
+            queryKey={["order-chart"]}
+            onData={handleOrderData}
+          />
           <ChartCard
             title="Order Activity"
             subtitle="Daily orders vs cancellations this week"
@@ -839,7 +739,6 @@ export default function Dashboard({
           </ChartCard>
         </div>
 
-        {/* Conversion Donut */}
         <div className="card p-5 flex flex-col">
           <div className="mb-4">
             <h3 className="description-text text-sm font-bold">
