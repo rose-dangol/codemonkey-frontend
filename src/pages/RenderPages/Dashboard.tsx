@@ -17,6 +17,21 @@ import { useQuery } from "@tanstack/react-query";
 import { saleService } from "@/services/Metrics/saleService";
 import DateRangePicker from "@/components/DateRangePicker";
 import type { DateRangeData, Granularity } from "@/components/DateRangePicker";
+import { CustomerService } from "@/services/Customer/CustomerService";
+import {
+  type UserGrowthItemType,
+  type CustomerType,
+} from "@/TypeDefinitions/Customer.type";
+import { DashboardService } from "@/services/Dashboard/dashboard.service";
+import {
+  IconCancelled,
+  IconConversion,
+  IconMargin,
+  IconOrders,
+  IconProfit,
+  IconSales,
+  IconUsers,
+} from "@/assets/Icons/Icons";
 
 ChartJS.register(
   CategoryScale,
@@ -32,8 +47,20 @@ ChartJS.register(
 );
 
 // ─── Fallback / static data ───────────────────────────────────────────────────
-
+/*
 const ACTIVE_USERS_STATIC = 1482;
+
+const USER_GROWTH_DATA = [
+  { month: "Jan", users: 800, newUsers: 120 },
+  { month: "Feb", users: 950, newUsers: 150 },
+  { month: "Mar", users: 1050, newUsers: 100 },
+  { month: "Apr", users: 1180, newUsers: 130 },
+  { month: "May", users: 1260, newUsers: 80 },
+  { month: "Jun", users: 1340, newUsers: 80 },
+  { month: "Jul", users: 1410, newUsers: 70 },
+  { month: "Aug", users: 1482, newUsers: 10 },
+];
+*/
 
 const REVENUE_FALLBACK = [
   { label: "Jan", revenue: 2100, profit: 640 },
@@ -44,17 +71,6 @@ const REVENUE_FALLBACK = [
   { label: "Jun", revenue: 3400, profit: 1050 },
   { label: "Jul", revenue: 3200, profit: 980 },
   { label: "Aug", revenue: 3624, profit: 1200 },
-];
-
-const USER_GROWTH_DATA = [
-  { month: "Jan", users: 800, newUsers: 120 },
-  { month: "Feb", users: 950, newUsers: 150 },
-  { month: "Mar", users: 1050, newUsers: 100 },
-  { month: "Apr", users: 1180, newUsers: 130 },
-  { month: "May", users: 1260, newUsers: 80 },
-  { month: "Jun", users: 1340, newUsers: 80 },
-  { month: "Jul", users: 1410, newUsers: 70 },
-  { month: "Aug", users: 1482, newUsers: 72 },
 ];
 
 const ORDER_DATA = [
@@ -149,97 +165,6 @@ function buildOrderChartData(
     ],
   };
 }
-
-// ─── Icons ────────────────────────────────────────────────────────────────────
-
-const IconSales = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={1.8}
-    className="w-5 h-5"
-  >
-    <path d="M12 2L2 7l10 5 10-5-10-5z" />
-    <path d="M2 17l10 5 10-5M2 12l10 5 10-5" />
-  </svg>
-);
-const IconProfit = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={1.8}
-    className="w-5 h-5"
-  >
-    <line x1="12" y1="1" x2="12" y2="23" />
-    <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
-  </svg>
-);
-const IconUsers = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={1.8}
-    className="w-5 h-5"
-  >
-    <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
-    <circle cx="9" cy="7" r="4" />
-    <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
-  </svg>
-);
-const IconOrders = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={1.8}
-    className="w-5 h-5"
-  >
-    <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
-    <rect x="9" y="3" width="6" height="4" rx="2" />
-    <path d="M9 12h6M9 16h4" />
-  </svg>
-);
-const IconConversion = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={1.8}
-    className="w-5 h-5"
-  >
-    <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
-    <polyline points="16 7 22 7 22 13" />
-  </svg>
-);
-const IconCancelled = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={1.8}
-    className="w-5 h-5"
-  >
-    <circle cx="12" cy="12" r="10" />
-    <line x1="15" y1="9" x2="9" y2="15" />
-    <line x1="9" y1="9" x2="15" y2="15" />
-  </svg>
-);
-const IconMargin = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={1.8}
-    className="w-5 h-5"
-  >
-    <circle cx="9" cy="9" r="2" />
-    <circle cx="15" cy="15" r="2" />
-    <line x1="6" y1="18" x2="18" y2="6" />
-  </svg>
-);
 
 // ─── Small UI pieces ──────────────────────────────────────────────────────────
 
@@ -365,46 +290,6 @@ const revenueChartOptions = {
   },
 };
 
-const userGrowthChartData = {
-  labels: USER_GROWTH_DATA.map((d) => d.month),
-  datasets: [
-    {
-      label: "Total Users",
-      data: USER_GROWTH_DATA.map((d) => d.users),
-      borderColor: "#056B6A",
-      backgroundColor: (ctx: any) => {
-        const { ctx: c, chartArea } = ctx.chart;
-        if (!chartArea) return "rgba(5,107,106,0.1)";
-        const g = c.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-        g.addColorStop(0, "rgba(5,107,106,0.18)");
-        g.addColorStop(1, "rgba(5,107,106,0.0)");
-        return g;
-      },
-      borderWidth: 2.5,
-      tension: 0.45,
-      fill: true,
-      pointRadius: 3,
-      pointBackgroundColor: "#056B6A",
-      pointBorderColor: "#fff",
-      pointBorderWidth: 2,
-    },
-    {
-      label: "New Users",
-      data: USER_GROWTH_DATA.map((d) => d.newUsers),
-      borderColor: "#FFCB44",
-      backgroundColor: "transparent",
-      borderWidth: 2,
-      tension: 0.45,
-      fill: false,
-      borderDash: [5, 3],
-      pointRadius: 3,
-      pointBackgroundColor: "#FFCB44",
-      pointBorderColor: "#fff",
-      pointBorderWidth: 2,
-    },
-  ],
-};
-
 const userGrowthChartOptions = {
   responsive: true,
   maintainAspectRatio: false,
@@ -500,6 +385,71 @@ export default function Dashboard() {
   const [orderChartData, setOrderChartData] = useState(() =>
     buildOrderChartData(undefined, "day"),
   );
+
+  //fetch total customer data
+  const { data: Customers = [] } = useQuery<CustomerType[]>({
+    queryKey: ["customers"],
+    queryFn: CustomerService.getAll,
+  });
+  const totalCustomers = Customers.length || 0;
+  const activeCustomers = Customers?.filter((c) => c.isActive).length || 0;
+
+  //fetch user growth data
+  const { data: UserGrowth = [] } = useQuery<UserGrowthItemType[]>({
+    queryKey: ["userGrowth"],
+    queryFn: DashboardService.getUserGrowth,
+  });
+
+  //changed month:may 2026 to just 'May'
+  const userGrowthMapped = UserGrowth.map((i) => ({
+    ...i,
+    month: i.month.split(" ")[0],
+  }));
+
+  const userGrowthChartData = {
+    labels: userGrowthMapped.map((d) => d.month),
+    datasets: [
+      {
+        label: "Total Users",
+        data: userGrowthMapped.map((d) => d.users),
+        borderColor: "#056B6A",
+        backgroundColor: (ctx: any) => {
+          const { ctx: c, chartArea } = ctx.chart;
+          if (!chartArea) return "rgba(5,107,106,0.1)";
+          const g = c.createLinearGradient(
+            0,
+            chartArea.top,
+            0,
+            chartArea.bottom,
+          );
+          g.addColorStop(0, "rgba(5,107,106,0.18)");
+          g.addColorStop(1, "rgba(5,107,106,0.0)");
+          return g;
+        },
+        borderWidth: 2.5,
+        tension: 0.45,
+        fill: true,
+        pointRadius: 3,
+        pointBackgroundColor: "#056B6A",
+        pointBorderColor: "#fff",
+        pointBorderWidth: 2,
+      },
+      {
+        label: "New Users",
+        data: userGrowthMapped.map((d) => d.newUsers),
+        borderColor: "#FFCB44",
+        backgroundColor: "transparent",
+        borderWidth: 2,
+        tension: 0.45,
+        fill: false,
+        borderDash: [5, 3],
+        pointRadius: 3,
+        pointBackgroundColor: "#FFCB44",
+        pointBorderColor: "#fff",
+        pointBorderWidth: 2,
+      },
+    ],
+  };
 
   // ── FIX: Destroy all Chart.js instances on unmount to unblock navigation ──
   useEffect(() => {
@@ -597,7 +547,7 @@ export default function Dashboard() {
     },
     {
       label: "Active Users",
-      value: ACTIVE_USERS_STATIC.toLocaleString(),
+      value: activeCustomers,
       badge: "+5.1%",
       badgeVariant: "action",
       sub: "Currently active on platform",
@@ -797,7 +747,7 @@ export default function Dashboard() {
           },
           {
             label: "Total Users",
-            value: ACTIVE_USERS_STATIC.toLocaleString(),
+            value: totalCustomers,
             icon: "👥",
             bg: "state-light-bg",
             val: "state-color-text",
