@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import PublicRoutes from "./PublicRoute";
 import Login from "@/pages/auth/Login";
 import Register from "@/pages/auth/Register";
@@ -27,6 +27,8 @@ const Router = () => {
       <Route path="/email" element={<EmailCheck />} />
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+
           <Route path="/home" element={<Homepage />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/ordermgmt/overview" element={<OrderAnalytics />} />
