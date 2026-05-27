@@ -46,4 +46,14 @@ export const CustomerService = {
   //     const res = await api.delete(`category/deleteCategory`, { data: { categoryId: id } });
   //     return res.data;
   //   },
+
+  getGenderStats: async () => {
+    const res = await api.get("customer/stats/gender");
+    return res.data;
+  },
+
+  getAgeGroupStats: async () => {
+    const res = await api.get("customer/stats/age-group");
+    return res.data;
+  },
 };

@@ -371,6 +371,44 @@ const donutOptions = {
   },
 };
 
+//───gender and age filter chart Data
+
+function buildGenderChartData(apiData: any[] | undefined) {
+  const rows = apiData ?? [];
+
+  return {
+    labels: rows.map((r) => r.gender),
+    datasets: [
+      {
+        label: "Users",
+        data: rows.map((r) => r._count.gender),
+        backgroundColor: "rgba(59,130,246,0.75)",
+        borderRadius: 8,
+        borderSkipped: false,
+        barThickness: 18,
+      },
+    ],
+  };
+}
+
+function buildAgeChartData(apiData: any[] | undefined) {
+  const rows = apiData ?? [];
+
+  return {
+    labels: rows.map((r) => r.ageGroup),
+    datasets: [
+      {
+        label: "Users",
+        data: rows.map((r) => r._count.ageGroup),
+        backgroundColor: "rgba(34,197,94,0.75)",
+        borderRadius: 8,
+        borderSkipped: false,
+        barThickness: 18,
+      },
+    ],
+  };
+}
+
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 
 export default function Dashboard() {
@@ -450,6 +488,19 @@ export default function Dashboard() {
       },
     ],
   };
+
+  //fetch filtered users
+  const { data: genderData = [] } = useQuery({
+    queryKey: ["gender-stats"],
+    queryFn: CustomerService.getGenderStats,
+  });
+  const genderChartData = buildGenderChartData(genderData);
+
+  const { data: ageData = [] } = useQuery({
+    queryKey: ["agegroup-stats"],
+    queryFn: CustomerService.getAgeGroupStats,
+  });
+  const ageChartData = buildAgeChartData(ageData);
 
   // ── FIX: Destroy all Chart.js instances on unmount to unblock navigation ──
   useEffect(() => {
@@ -729,7 +780,7 @@ export default function Dashboard() {
       </div>
 
       {/* ── Bottom Stats Strip ── */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-5">
         {[
           {
             label: "Avg Order Value",
@@ -775,6 +826,19 @@ export default function Dashboard() {
             </div>
           </div>
         ))}
+      </div>
+
+      <div className="grid md:grid-cols-2 grid-cols-1 gap-5 mb-5">
+        <ChartCard title="User Group" subtitle="Group users by age">
+          <div style={{ height: 240 }}>
+            <Bar data={ageChartData} />
+          </div>
+        </ChartCard>
+        <ChartCard title="User Group" subtitle="Group users by gender">
+          <div style={{ height: 240 }}>
+            <Bar data={genderChartData} />
+          </div>
+        </ChartCard>
       </div>
     </div>
   );
