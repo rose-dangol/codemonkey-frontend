@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -14,15 +14,7 @@ import {
 } from "chart.js";
 import { Bar, Line, Doughnut } from "react-chartjs-2";
 import { useQuery } from "@tanstack/react-query";
-import { saleService } from "@/services/Metrics/saleService";
-import DateRangePicker from "@/components/DateRangePicker";
-import type { DateRangeData, Granularity } from "@/components/DateRangePicker";
-import { CustomerService } from "@/services/Customer/CustomerService";
-import {
-  type UserGrowthItemType,
-  type CustomerType,
-} from "@/TypeDefinitions/Customer.type";
-import { DashboardService } from "@/services/Dashboard/dashboard.service";
+
 import {
   IconCancelled,
   IconConversion,
@@ -31,7 +23,20 @@ import {
   IconProfit,
   IconSales,
   IconUsers,
+  PlusIcon,
 } from "@/assets/Icons/Icons";
+import { saleService } from "@/services/Metrics/saleService";
+import { CustomerService } from "@/services/Customer/CustomerService";
+import {
+  type UserGrowthItemType,
+  type CustomerType,
+} from "@/TypeDefinitions/Customer.type";
+import { DashboardService } from "@/services/Dashboard/dashboard.service";
+import DateRangeFilter, {
+  type DateRange,
+} from "@/components/DatePicker/DateRangeFilter";
+import { detectGranularity } from "@/lib/utils";
+import type { DateRangeData, Granularity } from "@/TypeDefinitions/common";
 
 ChartJS.register(
   CategoryScale,
@@ -420,9 +425,19 @@ export default function Dashboard() {
   );
   const [revenueSubtitle, setRevenueSubtitle] = useState("");
 
-  const [orderChartData, setOrderChartData] = useState(() =>
-    buildOrderChartData(undefined, "day"),
-  );
+  // const [orderChartData, setOrderChartData] = useState(() =>
+  //   buildOrderChartData(undefined, "day"),
+  // );
+
+  const [dateRange, setDateRange] = useState<DateRange>({
+    from: new Date(new Date().getFullYear(), 0, 1).toISOString(),
+    to: new Date().toISOString(),
+  });
+
+  const [orderDateRange, setOrderDateRange] = useState<DateRange>({
+    from: new Date(new Date().getFullYear(), 0, 1).toISOString(),
+    to: new Date().toISOString(),
+  });
 
   //fetch total customer data
   const { data: Customers = [] } = useQuery<CustomerType[]>({
@@ -509,10 +524,13 @@ export default function Dashboard() {
     };
   }, []);
 
+  //revenue chart
   const handleRevenueData = useCallback((result: DateRangeData<any[]>) => {
     if (result.isLoading) return;
 
-    setRevenueChartData(buildRevenueChartData(result.data, result.granularity));
+    setRevenueChartData(
+      buildRevenueChartData(result.data, result.revenueGranularity),
+    );
 
     const fmt = (iso: string) =>
       new Date(iso).toLocaleDateString("en-US", {
@@ -522,9 +540,9 @@ export default function Dashboard() {
       });
 
     const granLabel =
-      result.granularity === "day"
+      result.revenueGranularity === "day"
         ? "Daily"
-        : result.granularity === "month"
+        : result.revenueGranularity === "month"
           ? "Monthly"
           : "Yearly";
     setRevenueSubtitle(
@@ -532,10 +550,74 @@ export default function Dashboard() {
     );
   }, []);
 
-  const handleOrderData = useCallback((result: DateRangeData<any[]>) => {
-    if (result.isLoading) return;
-    setOrderChartData(buildOrderChartData(result.data, result.granularity));
-  }, []);
+  const revenueGranularity = useMemo(
+    () =>
+      dateRange.from && dateRange.to
+        ? detectGranularity(dateRange.from, dateRange.to)
+        : "month",
+    [dateRange.from, dateRange.to],
+  );
+
+  const { data, isLoading } = useQuery({
+    queryKey: [
+      "revenue-chart",
+      dateRange.from,
+      dateRange.to,
+      revenueGranularity,
+    ],
+    queryFn: () =>
+      saleService.getRevenueChart(
+        dateRange.from!,
+        dateRange.to!,
+        revenueGranularity,
+      ),
+    enabled: !!(dateRange.from && dateRange.to),
+  });
+
+  useEffect(() => {
+    if (isLoading || !data) return;
+    handleRevenueData({
+      data,
+      startDate: dateRange.from!,
+      endDate: dateRange.to!,
+      revenueGranularity,
+      isLoading,
+      isError: false,
+      error: null,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data, isLoading, dateRange, revenueGranularity]);
+
+  //order conversion rate
+  const orderGranularity = useMemo(
+    () =>
+      orderDateRange.from && orderDateRange.to
+        ? detectGranularity(orderDateRange.from, orderDateRange.to)
+        : "month",
+    [orderDateRange.from, orderDateRange.to],
+  );
+
+  const { data: orderData, isLoading: orderLoading } = useQuery({
+    queryKey: [
+      "order-chart",
+      orderDateRange.from,
+      orderDateRange.to,
+      orderGranularity,
+    ],
+    queryFn: () =>
+      saleService.getOrderChart(
+        orderDateRange.from!,
+        orderDateRange.to!,
+        orderGranularity,
+      ),
+    enabled: !!(orderDateRange.from && orderDateRange.to),
+  });
+
+  const orderChartData = useMemo(() => {
+    if (orderLoading || !orderData)
+      return buildOrderChartData(undefined, "day");
+    return buildOrderChartData(orderData, orderGranularity);
+  }, [orderData, orderLoading, orderGranularity]);
 
   // ── Clock ──────────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -666,22 +748,13 @@ export default function Dashboard() {
           </p>
         </div>
         <button className="action heading-font flex items-center gap-1.5 text-sm font-semibold rounded-full px-4 py-2 shadow-sm transition-colors duration-200">
-          <svg
-            className="w-4 h-4"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2.5}
-          >
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
+          <PlusIcon />
           Export Report
         </button>
       </div>
 
       {/* ── KPI Grid ── */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-4 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
         {kpis.map((kpi) => (
           <KPICard key={kpi.label} {...kpi} />
         ))}
@@ -690,14 +763,12 @@ export default function Dashboard() {
       {/* ── Revenue & User Growth ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
         <div className="lg:col-span-2 flex flex-col gap-3">
-          <DateRangePicker<any[]>
-            queryFn={({ startDate, endDate, granularity }) =>
-              saleService.getRevenueChart(startDate, endDate, granularity)
-            }
-            queryKey={["revenue-chart"]}
-            onData={handleRevenueData}
+          <DateRangeFilter
+            dateRange={dateRange}
+            handleDateRangeChange={(range) => {
+              setDateRange(range);
+            }}
           />
-
           <ChartCard title="Revenue Overview" subtitle={revenueSubtitle}>
             <div style={{ height: 260 }}>
               <Bar data={revenueChartData} options={revenueChartOptions} />
@@ -705,7 +776,7 @@ export default function Dashboard() {
           </ChartCard>
         </div>
 
-        <div>
+        <div className="card">
           <ChartCard
             title="User Growth"
             subtitle="Cumulative vs new user acquisition"
@@ -723,12 +794,11 @@ export default function Dashboard() {
       {/* ── Orders & Conversion ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
         <div className="lg:col-span-2">
-          <DateRangePicker<any[]>
-            queryFn={({ startDate, endDate, granularity }) =>
-              saleService.getOrderChart(startDate, endDate, granularity)
-            }
-            queryKey={["order-chart"]}
-            onData={handleOrderData}
+          <DateRangeFilter
+            dateRange={orderDateRange}
+            handleDateRangeChange={(range) => {
+              setOrderDateRange(range);
+            }}
           />
           <ChartCard
             title="Order Activity"
@@ -792,23 +862,23 @@ export default function Dashboard() {
           {
             label: "Profit Margin",
             value: `${metricData?.profitMargin}%`,
-            icon: "📈",
+            icon: <IconConversion />,
             bg: "state-light-bg",
             val: "state-color-text",
           },
           {
             label: "Total Users",
             value: totalCustomers,
-            icon: "👥",
+            icon: <IconUsers />,
             bg: "state-light-bg",
             val: "state-color-text",
           },
           {
             label: "Success Rate",
             value: `${(((metricData?.totalOrders - metricData?.cancelledOrder) / Math.max(metricData?.totalOrders, 1)) * 100).toFixed(0)}%`,
-            icon: "✅",
+            icon: <IconSales />,
             bg: "action-light-bg",
-            val: "action-text",
+            val: "state-color-text",
           },
         ].map((item) => (
           <div
