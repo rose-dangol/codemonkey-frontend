@@ -3,7 +3,7 @@ import DemoPage from "@/payments/page";
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import "@/App.css";
-import { Eye, SquarePen } from "lucide-react";
+import { Eye } from "lucide-react";
 
 import { OrderService } from "@/services/OrderManagement/OrderService";
 import type { OrderType } from "@/TypeDefinitions/Order";
@@ -11,7 +11,7 @@ import { CustomerService } from "@/services/Customer/CustomerService";
 import { Link } from "react-router-dom";
 
 const OrderAnalytics = () => {
-  const [open, setOpen] = useState(false);
+  // const [open, setOpen] = useState(false);
   const [openAdd, setOpenAdd] = useState(false);
 
   const queryClient = useQueryClient();
@@ -156,7 +156,7 @@ const OrderAnalytics = () => {
         return (
           <div className="flex items-center gap-2">
             {/* Edit */}
-            <div
+            {/* <div
               className="flex justify-center items-center rounded-lg p-2 w-max cursor-pointer transition-all hover:bg-gray-100 hover:scale-110 action-hover"
               onClick={() => {
                 // setSelectedProduct(order);
@@ -164,7 +164,7 @@ const OrderAnalytics = () => {
               }}
             >
               <SquarePen size={20} />
-            </div>
+            </div> */}
 
             {/* View */}
             <Link

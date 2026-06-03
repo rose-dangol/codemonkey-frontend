@@ -69,38 +69,49 @@ type UpdateField<T> = {
 export const updateCategoryFields = (
   allItems?: CategoryType[],
   currentId?: string,
-): UpdateField<UpdateCategoryDto>[] => [
-  {
-    key: "categoryName",
-    label: "Category Name",
-    placeholder: "Enter category name",
-    type: "text",
-  },
-  {
-    key: "categoryParentId",
-    label: "Parent Category",
-    placeholder: "Enter parent category",
-    type: "select(parent)",
-    options: allItems
-      ?.filter((c) => c.id !== currentId)
-      ?.map((c) => ({
-        label: c.categoryName,
-        value: c.id,
-      })),
-  },
-  {
-    key: "categoryImage",
-    label: "Category Image",
-    placeholder: "Enter image url",
-    type: "image",
-  },
-  {
-    key: "categoryDesc",
-    label: "Category Description",
-    placeholder: "Enter description",
-    type: "text",
-  },
-];
+): UpdateField<UpdateCategoryDto>[] => {
+  const buildCategoryOptions = (pro?: CategoryType[]): any[] => {
+    if (!pro) return [];
+    return pro
+      .filter((p) => p.id !== currentId)
+      .map((p) => ({
+        label: p.categoryName,
+        value: p.id,
+        children:
+          p.subCategories && p.subCategories.length > 0
+            ? buildCategoryOptions(p.subCategories)
+            : undefined,
+      }));
+  };
+
+  return [
+    {
+      key: "categoryName",
+      label: "Category Name",
+      placeholder: "Enter category name",
+      type: "text",
+    },
+    {
+      key: "categoryParentId",
+      label: "Parent Category",
+      placeholder: "Enter parent category",
+      type: "select(parent)",
+      options: buildCategoryOptions(allItems),
+    },
+    {
+      key: "categoryImage",
+      label: "Category Image",
+      placeholder: "Enter image url",
+      type: "image",
+    },
+    {
+      key: "categoryDesc",
+      label: "Category Description",
+      placeholder: "Enter description",
+      type: "text",
+    },
+  ];
+};
 
 export type UpdateBrandDto = {
   id: string;

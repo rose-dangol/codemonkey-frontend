@@ -1,6 +1,8 @@
 import axios, { type InternalAxiosRequestConfig } from "axios";
 import { tokenStore } from "./tokenStore";
 import { silentRefresh } from "./auth";
+import { toast } from "react-toastify";
+
 
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL ?? "http://localhost:4004/",
@@ -43,6 +45,24 @@ api.interceptors.response.use(
 
     // Only handle 401s that haven't already been retried
     if (!error.response || error.response?.status !== 401 || original._retry) {
+      // Show elegant toast notification for server errors, network errors, or other unhandled API errors
+      if (!error.response) {
+        toast.error("Network Error: Unable to connect to the server. Please check your internet connection.");
+      } else {
+        const status = error.response.status;
+        const data = error.response.data;
+        const errorMessage = data?.message || data?.error || error.message || "An unexpected error occurred.";
+
+        if (status === 500) {
+          toast.error(`Server Error (500): ${errorMessage}`);
+        } else if (status === 403) {
+          toast.error("Access Denied: You do not have permission to perform this action.");
+        } else if (status !== 404 && status !== 401) {
+          // Toast 400 Bad Request or other client/server errors, except 404 (Not Found) or 401 (handled by auth flow)
+          toast.error(`Error: ${errorMessage}`);
+        }
+      }
+
       return Promise.reject(error);
     }
 

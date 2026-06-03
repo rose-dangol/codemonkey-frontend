@@ -138,8 +138,8 @@ export function UpdateModal<T extends Record<string, any>>(
     image: (field) => {
       const currentValue = formData[field.key];
       const previewUrl =
-        currentValue instanceof File
-          ? URL.createObjectURL(currentValue)
+        (currentValue as any) instanceof File
+          ? URL.createObjectURL(currentValue as any)
           : typeof currentValue === "string"
             ? currentValue
             : null;

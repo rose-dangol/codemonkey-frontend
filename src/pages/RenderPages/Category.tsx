@@ -170,7 +170,7 @@ const Category = () => {
         setOpen={setOpen}
         title="Update Category"
         description="Update category details"
-        fields={updateCategoryFields(categoryData, selectedCategory?.id)}
+        fields={updateCategoryFields(payments, selectedCategory?.id)}
         initialData={selectedCategory ?? {}} // prefill form
         allItems={categoryData}
         onUpdate={(updatedData) => {
@@ -183,7 +183,7 @@ const Category = () => {
         setOpen={setOpenAdd}
         title="Add Category"
         description="Add new category"
-        fields={updateCategoryFields(categoryData)}
+        fields={updateCategoryFields(payments)}
         onUpdate={(updatedData) => {
           handleAdd(updatedData);
           setOpenAdd(false);
