@@ -125,38 +125,54 @@ export const updateBrandFields = (
   _allItems?: BrandsType[],
   _currentId?: string,
   allProducts?: ProductType[],
-): UpdateField<UpdateBrandDto>[] => [
-  {
-    key: "brandName",
-    label: "Brand Name",
-    placeholder: "Enter brand name",
-    type: "text",
-  },
-  {
-    key: "brandImage",
-    label: "Brand Image",
-    placeholder: "Enter image url",
-    type: "image",
-  },
-  {
-    key: "brandDesc",
-    label: "Brand Description",
-    placeholder: "Enter description",
-    type: "text",
-  },
-  {
-    key: "productId",
-    label: "Products",
-    placeholder: "Enter products",
-    type: "multi-select",
-    options:
-      allProducts?.map((p) => ({
+): UpdateField<UpdateBrandDto>[] => {
+  // Get the IDs of products already assigned to this brand
+  const currentBrand = _allItems?.find((b) => b.id === _currentId);
+  const brandProductIds = new Set(
+    currentBrand?.products?.map((p) => p.id) ?? [],
+  );
+
+  // If editing a brand, show only its own products; otherwise show all
+  const filteredProducts =
+    _currentId && brandProductIds.size > 0
+      ? (allProducts ?? []).filter((p) => brandProductIds.has(p.id))
+      : (allProducts ?? []);
+
+  return [
+    {
+      key: "brandName",
+      label: "Brand Name",
+      placeholder: "Enter brand name",
+      type: "text",
+    },
+    {
+      key: "brandImage",
+      label: "Brand Image",
+      placeholder: "Enter image url",
+      type: "image",
+    },
+    {
+      key: "brandDesc",
+      label: "Brand Description",
+      placeholder: "Enter description",
+      type: "text",
+    },
+    {
+      key: "productId",
+      label: "Products",
+      placeholder: "Enter products",
+      type: "multi-select",
+      options: filteredProducts.map((p) => ({
         label: p.productName,
         value: p.id,
         isHidden: p.isHidden,
-      })) ?? [],
-  },
-];
+      })),
+    },
+  ];
+};
+
+
+
 
 export type UpdateProductDto = {
   id?: string | undefined | null;

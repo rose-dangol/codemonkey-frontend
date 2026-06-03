@@ -18,15 +18,11 @@ export function GetModal({
   title = "Details",
 }: GetModalProps) {
   const { data: ModalData } = useQuery({
-    queryKey: [title, id],
-    queryFn: () => fetchData(),
-    enabled: open,
+    queryKey: [title, endpoint],
+    queryFn: () => api.get(endpoint).then((res) => res.data),
+    enabled: open && !!id,
   });
 
-  const fetchData = async () => {
-    const res = await api.get(endpoint);
-    return res.data;
-  };
 
   // State (add to your component)
   const [search, setSearch] = useState("");
@@ -38,7 +34,7 @@ export function GetModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-primary border-0 rounded-xl">
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
+          <DialogTitle>{title}asd</DialogTitle>
         </DialogHeader>
 
         <div className="px-4 pt-4 pb-2 ">
