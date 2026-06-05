@@ -10,7 +10,8 @@ import {
   updateCategoryFields,
   type UpdateCategoryDto,
 } from "@/TypeDefinitions/ModalType";
-import { Loader2, SquarePen } from "lucide-react";
+import { Loader2, SquarePen, UploadIcon } from "lucide-react";
+import BulkMigrateModal from "@/components/BulkMigrate";
 
 // Define columns dynamically for category data
 
@@ -19,6 +20,8 @@ const Category = () => {
   const [openAdd, setOpenAdd] = useState(false);
   const [selectedCategory, setSelectedCategory] =
     useState<UpdateCategoryDto | null>(null);
+  const [bulk, setBulk] = useState(false);
+  const [categoryId, setCategoryId] = useState(null);
 
   const queryClient = useQueryClient();
 
@@ -109,14 +112,28 @@ const Category = () => {
       accessorKey: "action",
       header: "Action",
       cell: ({ row }) => (
-        <div
-          className="flex justify-center items-center rounded-lg p-2 w-max cursor-pointer transition-all hover:bg-gray-100 hover:scale-110 action-hover"
-          onClick={() => {
-            setSelectedCategory(row.original);
-            setOpen(true);
-          }}
-        >
-          <SquarePen size={20} />
+        <div className="flex items-center">
+          <div
+            className="flex justify-center items-center rounded-lg p-2 w-max cursor-pointer transition-all hover:bg-gray-100 hover:scale-110 action-hover"
+            onClick={() => {
+              setSelectedCategory(row.original);
+              setOpen(true);
+            }}
+          >
+            <SquarePen size={20} />
+          </div>
+          <button
+            onClick={() => {
+              setBulk(true);
+              setCategoryId(row.original.id);
+            }}
+            className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-md
+            bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100 transition-colors
+            dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800"
+          >
+            <UploadIcon className="w-3.5 h-3.5" />
+            Bulk migrate
+          </button>
         </div>
       ),
     },
@@ -143,6 +160,8 @@ const Category = () => {
   useEffect(() => {
     payments && setCategoryData(flatAllNodes(payments));
   }, [payments]);
+
+  
 
   const isLoading =
     mutation.isPending || addMutation.isPending || deleteMutation.isPending;
@@ -189,6 +208,13 @@ const Category = () => {
           setOpenAdd(false);
         }}
       />
+      {bulk && (
+        <BulkMigrateModal
+          categoryId={categoryId}
+          allCategory={payments}
+          onClose={() => setBulk(false)}
+        />
+      )}
     </div>
   );
 };

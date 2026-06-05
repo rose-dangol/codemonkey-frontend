@@ -7,6 +7,7 @@ import type { CategoryType } from "./Category";
 import type { CogsDefinitionType } from "./CogsDefinitions";
 import type { ProductType } from "./Product";
 import type { ProductVariantType } from "./ProductVariant";
+import type { TagType } from "./Tag";
 
 export type modalType = {
   open: boolean;
@@ -171,9 +172,6 @@ export const updateBrandFields = (
   ];
 };
 
-
-
-
 export type UpdateProductDto = {
   id?: string | undefined | null;
   serviceId?: string | undefined | null;
@@ -183,12 +181,13 @@ export type UpdateProductDto = {
   productBrandId?: string;
   productImage?: File | string | null;
   cogs?: CogsDefinitionType[];
+  productTagIds?: string[];
 };
 
 export const updateProductFields = (
   brands?: BrandsType[],
   categories?: CategoryType[],
-
+  tags?: TagType[],
   currentId?: string,
 ): UpdateField<UpdateProductDto>[] => {
   const buildCategoryOptions = (cats?: CategoryType[]): any[] => {
@@ -210,6 +209,14 @@ export const updateProductFields = (
     return brand.map((b) => ({
       label: b.brandName,
       value: b.id,
+    }));
+  };
+
+  const buildTagOptions = (tag?: TagType[]): any[] => {
+    if (!tag) return [];
+    return tag.map((t) => ({
+      label: t.name,
+      value: t.id,
     }));
   };
 
@@ -239,6 +246,13 @@ export const updateProductFields = (
       placeholder: "Enter brand",
       type: "select(parent)",
       options: buildBrandOptions(brands),
+    },
+    {
+      key: "productTagIds",
+      label: "Tags",
+      placeholder: "Enter tags",
+      type: "multi-select",
+      options: buildTagOptions(tags),
     },
     {
       key: "productImage",
@@ -282,6 +296,25 @@ export const updateCogsDefinitionFields = (
       key: "name",
       label: "Cogs Name",
       placeholder: "Enter cogs name",
+      type: "text",
+    },
+  ];
+};
+
+export const updateTagFields = (
+  _currentId?: string,
+): UpdateField<TagType>[] => {
+  return [
+    {
+      key: "name",
+      label: "Tag Name",
+      placeholder: "Enter tag name",
+      type: "text",
+    },
+    {
+      key: "slug",
+      label: "Tag Slug",
+      placeholder: "Enter tag slug",
       type: "text",
     },
   ];

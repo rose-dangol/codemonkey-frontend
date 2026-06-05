@@ -100,6 +100,11 @@ export default function AppLayout() {
             url: "/ordermgmt/orderanalytics",
             icon: SettingsIcon,
           },
+          {
+            title: "Tags",
+            url: "/ordermgmt/tags",
+            icon: SettingsIcon,
+          },
         ],
       },
 

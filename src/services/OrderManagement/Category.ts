@@ -9,6 +9,14 @@ export const CategoryService = {
     return res.data;
   },
 
+  bulkMigrate: (productIds: string[], categoryId: string) =>
+    api.patch("/product/bulk-migrate", { productIds, categoryId }),
+
+  getProductbyCategory: async (id: string) => {
+    const res = await api.get(`category/getProductByCategory/${id}`);
+    return res.data?.data || res.data;
+  },
+
   getById: async (id: string) => {
     const res = await api.get(`category/getCategory/${id}`);
     return res.data;
