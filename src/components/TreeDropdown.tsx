@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 
 type Option = {
   label: string;
@@ -110,14 +110,16 @@ export function TreeDropdown({
   onChange,
   placeholder = "Select...",
   allowParentSelect = false,
+  trigger,
 }: {
   options: Option[];
   value: string;
   onChange: (val: string) => void;
   placeholder?: string;
   allowParentSelect?: boolean;
+  trigger?: React.ReactNode;
 }) {
-  console.log("options : ", options);
+
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
 
@@ -134,12 +136,16 @@ export function TreeDropdown({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <button
-          type="button"
-          className="border py-1 px-3 w-full text-left description-text rounded-[9px] bg-primary"
-        >
-          {selectedLabel || value || placeholder}
-        </button>
+        {trigger ? (
+          trigger
+        ) : (
+          <button
+            type="button"
+            className="border py-1 px-3 w-full text-left description-text rounded-[9px] bg-primary"
+          >
+            {selectedLabel || value || placeholder}
+          </button>
+        )}
       </PopoverTrigger>
 
       <PopoverContent className="w-80 p-2">

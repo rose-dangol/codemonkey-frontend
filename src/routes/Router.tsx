@@ -16,6 +16,7 @@ import NotFound from "@/pages/Fallback";
 import Dashboard from "../pages/RenderPages/Dashboard";
 import OrderAnalytics from "@/pages/RenderPages/OrderAnalytics";
 import OrderDetail from "@/pages/DetailPages/OrderDetail";
+import Tags from "@/pages/RenderPages/Tags";
 
 const Router = () => {
   return (
@@ -35,6 +36,7 @@ const Router = () => {
           <Route path="/ordermgmt/category" element={<Category />} />
           <Route path="/ordermgmt/brands" element={<Brands />} />
           <Route path="/ordermgmt/products" element={<Product />} />
+          <Route path="/ordermgmt/tags" element={<Tags />} />
           <Route
             path="/ordermgmt/productvariant"
             element={<ProductVariant />}

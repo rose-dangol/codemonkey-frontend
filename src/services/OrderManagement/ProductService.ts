@@ -4,9 +4,11 @@ import { toast } from "react-toastify";
 
 export const ProductService = {
   getAll: async () => {
-    const res = await api.get("product/getAllProduct");
-    return res.data;
+    const res = await api.get("product/getAllProduct?limit=1000");
+    return res.data?.data || res.data;
   },
+
+ 
 
   getById: async (id: string) => {
     const res = await api.get(`product/getProduct/${id}`);
@@ -29,6 +31,12 @@ export const ProductService = {
 
       if (data.productImage instanceof File) {
         formData.append("productImage", data.productImage);
+      }
+
+      if (data.productTagIds?.length) {
+        data.productTagIds.forEach((tagId) => {
+          formData.append("productTagIds", tagId);
+        });
       }
 
       const res = await api.post(`product/addProduct`, formData, {
@@ -57,6 +65,12 @@ export const ProductService = {
 
       if (data.productImage instanceof File) {
         formData.append("productImage", data.productImage);
+      }
+
+      if (data.productTagIds?.length) {
+        data.productTagIds.forEach((tagId) => {
+          formData.append("productTagIds", tagId);
+        });
       }
 
       const res = await api.put(`product/updateProduct/${id}`, formData, {

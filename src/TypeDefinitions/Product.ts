@@ -25,4 +25,10 @@ export type ProductType = {
     value: string;
     serviceTypeId: string;
   }[];
+  tags: {
+    tag: {
+      id: string;
+      name: string;
+    };
+  }[];
 };
