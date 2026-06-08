@@ -17,6 +17,8 @@ import Dashboard from "../pages/RenderPages/Dashboard";
 import OrderAnalytics from "@/pages/RenderPages/OrderAnalytics";
 import OrderDetail from "@/pages/DetailPages/OrderDetail";
 import Tags from "@/pages/RenderPages/Tags";
+import GeneralPage from "@/pages/NavigationItem/GeneralPage";
+import GeneralPageCreate from "@/pages/NavigationItem/GeneralPageCreate";
 
 const Router = () => {
   return (
@@ -37,6 +39,10 @@ const Router = () => {
           <Route path="/ordermgmt/brands" element={<Brands />} />
           <Route path="/ordermgmt/products" element={<Product />} />
           <Route path="/ordermgmt/tags" element={<Tags />} />
+          <Route path="/pagmgmt/general" element={<GeneralPage />} />
+          <Route path="/generalPage/create" element={<GeneralPageCreate />} />
+          <Route path="/generalPage/update/:id" element={<GeneralPageCreate />} />
+
           <Route
             path="/ordermgmt/productvariant"
             element={<ProductVariant />}
