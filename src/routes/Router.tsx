@@ -16,7 +16,11 @@ import NotFound from "@/pages/Fallback";
 import Dashboard from "../pages/RenderPages/Dashboard";
 import OrderAnalytics from "@/pages/RenderPages/OrderAnalytics";
 import OrderDetail from "@/pages/DetailPages/OrderDetail";
+import InventoryManagement from "@/pages/RenderPages/InventoryManagement";
 import Tags from "@/pages/RenderPages/Tags";
+import InventoryVariantDetail from "@/pages/DetailPages/InventoryVariantDetail";
+import InventoryTransactionHistory from "@/pages/RenderPages/InventoryTransactionHistory";
+import StockStatusManagement from "@/pages/RenderPages/StockStatusManagement";
 
 const Router = () => {
   return (
@@ -55,6 +59,20 @@ const Router = () => {
             element={<OrderAnalytics />}
           />
           <Route path="/order/detail/:id" element={<OrderDetail />} />
+
+          <Route path="/inventory/overview" element={<InventoryManagement />} />
+          <Route
+            path="/inventory/variant/:id"
+            element={<InventoryVariantDetail />}
+          />
+          <Route
+            path="/inventory/transactions"
+            element={<InventoryTransactionHistory />}
+          />
+          <Route
+            path="/inventory/stock-statuses"
+            element={<StockStatusManagement />}
+          />
         </Route>
       </Route>
       <Route path="*" element={<NotFound />} />

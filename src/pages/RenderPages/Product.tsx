@@ -143,7 +143,7 @@ const Product = () => {
         }
 
         return (
-          <div className="flex flex-wrap gap-1.5 max-w-[250px]">
+          <div className="flex flex-wrap gap-1.5 max-w-62.5">
             {tags.map((tagObj, index) => {
               const tagName = tagObj?.tag?.name;
               if (!tagName) return null;

@@ -35,6 +35,10 @@ export function UpdateModal<T extends Record<string, any>>(
 
   const handleChange = (key: string, value: any) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
+    if (key === "productId") {
+      next.varientId = "";
+    }
+    return next;
   };
 
   const handleSubmit = (e: React.MouseEvent) => {
@@ -168,6 +172,46 @@ export function UpdateModal<T extends Record<string, any>>(
             />
           </label>
         </div>
+      );
+    },
+    "radio-button": (field) => {
+      return (
+        <div className="flex gap-4">
+          {field.options?.map((opt) => (
+            <label
+              key={String(opt.value)}
+              className="flex items-center gap-2 cursor-pointer"
+            >
+              <input
+                type="radio"
+                name={field.key}
+                checked={formData[field.key] === opt.value}
+                onChange={() =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    [field.key]: opt.value,
+                  }))
+                }
+              />
+              {opt.label}
+            </label>
+          ))}
+        </div>
+      );
+    },
+    "select(dependent)": (field) => {
+      const parentValue = formData[field.parentKey];
+
+      const options = field.getOptions
+        ? field.getOptions(parentValue, field.sourceData)
+        : [];
+
+      return (
+        <TreeDropdown
+          options={options}
+          value={formData[field.key] ?? ""}
+          onChange={(val) => handleChange(field.key, val)}
+        />
       );
     },
   };
