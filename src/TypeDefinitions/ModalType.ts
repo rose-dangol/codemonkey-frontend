@@ -5,6 +5,8 @@ import type {
 import type { BrandsType } from "./Brands";
 import type { CategoryType } from "./Category";
 import type { CogsDefinitionType } from "./CogsDefinitions";
+import type { GeneralPageDto } from "./GeneralPage";
+import type { UpdateNavigationItemDto } from "./NavigationItem";
 import type { ProductType } from "./Product";
 import type { ProductVariantType } from "./ProductVariant";
 import type { TagType } from "./Tag";
@@ -45,7 +47,7 @@ export type UpdateCategoryDto = {
   productCategory?: CategoryType;
 };
 
-type UpdateField<T> = {
+export type UpdateField<T> = {
   key: Extract<keyof T, string>;
   label: string;
   placeholder?: string;
@@ -58,7 +60,9 @@ type UpdateField<T> = {
     | "dropdown"
     | "select(parent)"
     | "tabs"
-    | "image";
+    | "image"
+    | "boolean"
+    | "select(GeneralPage)";
   options?: { label: string; value: string; children?: any[] }[];
   tabDefinitions?: { id: string; name: string }[];
   cell?: (
@@ -259,6 +263,74 @@ export const updateProductFields = (
       label: "Product Image",
       placeholder: "Enter image url",
       type: "image",
+    },
+  ];
+};
+
+export const updateNavigationItemFields = (
+  pages?: GeneralPageDto[],
+  currentId?: string,
+): UpdateField<UpdateNavigationItemDto>[] => {
+  const buildPageOptions = (pages?: GeneralPageDto[], currentId?: string) => {
+    if (!pages) return [];
+
+    return pages.map((p) => {
+      const navItems = p.navigationItems ?? [];
+      const hasNavItems = navItems.length > 0;
+
+      const isCurrentPage = currentId
+        ? navItems.some((n) => n.id === currentId)
+        : false;
+
+      const otherNavItems = currentId
+        ? navItems.filter((n) => n.id !== currentId)
+        : navItems;
+
+      const disabled = hasNavItems || otherNavItems.length > 0;
+
+      let disabledReason: string | undefined;
+      if (disabled) {
+        const linkedNames = otherNavItems
+          .map((n) => n.label || `Nav ${n.id}`)
+          .join(", ");
+        disabledReason = `Linked to: ${linkedNames}`;
+      }
+
+      return {
+        label: p.heading,
+        value: p.id || "",
+        disabled,
+        disabledReason,
+        isCurrentSelection: isCurrentPage,
+      };
+    });
+  };
+
+  return [
+    {
+      key: "label",
+      label: "Label",
+      placeholder: "Enter label",
+      type: "text",
+    },
+    {
+      key: "pageId",
+      label: "Page",
+      placeholder: "Enter page",
+      type: "select(GeneralPage)",
+      options: buildPageOptions(pages, currentId),
+    },
+
+    {
+      key: "sortOrder",
+      label: "Sort Order",
+      placeholder: "Enter sort order",
+      type: "number",
+    },
+    {
+      key: "isVisible",
+      label: "Visible",
+      type: "boolean",
     },
   ];
 };

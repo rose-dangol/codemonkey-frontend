@@ -19,6 +19,7 @@ import OrderDetail from "@/pages/DetailPages/OrderDetail";
 import Tags from "@/pages/RenderPages/Tags";
 import GeneralPage from "@/pages/NavigationItem/GeneralPage";
 import GeneralPageCreate from "@/pages/NavigationItem/GeneralPageCreate";
+import NavigationItem from "@/pages/NavigationItem/NavigationItem";
 
 const Router = () => {
   return (
@@ -41,7 +42,11 @@ const Router = () => {
           <Route path="/ordermgmt/tags" element={<Tags />} />
           <Route path="/pagmgmt/general" element={<GeneralPage />} />
           <Route path="/generalPage/create" element={<GeneralPageCreate />} />
-          <Route path="/generalPage/update/:id" element={<GeneralPageCreate />} />
+          <Route
+            path="/generalPage/update/:id"
+            element={<GeneralPageCreate />}
+          />
+          <Route path="/pagmgmt/navigationitem" element={<NavigationItem />} />
 
           <Route
             path="/ordermgmt/productvariant"

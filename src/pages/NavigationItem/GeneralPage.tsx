@@ -1,22 +1,15 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import DemoPage from "@/payments/page";
-import { useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
+import {  useQuery, useQueryClient } from "@tanstack/react-query";
 import "@/App.css";
-import { UpdateModal } from "@/Layout/UpdateModal";
-import { updateTagFields } from "@/TypeDefinitions/ModalType";
 import { SquarePen } from "lucide-react";
-import { toast } from "react-toastify";
-import type { TagType } from "@/TypeDefinitions/Tag";
-import { TagService } from "@/services/Tags/TagService";
 import GeneralPageTemplate from "@/payments/generalPageTemplate";
 import { GeneralPageService } from "@/services/GeneralPage/GeneralPage";
 import { Link } from "react-router-dom";
+import type { GeneralPageDto } from "@/TypeDefinitions/GeneralPage";
 
 const GeneralPage = () => {
-  const [open, setOpen] = useState(false);
-  const [openAdd, setOpenAdd] = useState(false);
-  const [selectedTag, setSelectedTag] = useState<TagType | null>(null);
+
 
   const queryClient = useQueryClient();
 
@@ -39,7 +32,7 @@ const GeneralPage = () => {
     queryClient.invalidateQueries({ queryKey: ["pageData"] });
   };
 
-  const TagColumns: ColumnDef<TagType>[] = [
+  const GeneralPageColumns: ColumnDef<GeneralPageDto>[] = [
     {
       accessorKey: "heading",
       header: "Heading",
@@ -69,7 +62,7 @@ const GeneralPage = () => {
 
       <GeneralPageTemplate
         data={pageData}
-        columns={TagColumns}
+        columns={GeneralPageColumns}
         link="/generalPage/create"
         onDelete={handleDelete}
         title={"General Page"}

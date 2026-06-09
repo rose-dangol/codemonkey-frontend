@@ -1,7 +1,7 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { columns as defaultColumns } from "./columns";
 import { DataTable } from "./data-table";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 type GeneralPageProps = {
   data: any[];

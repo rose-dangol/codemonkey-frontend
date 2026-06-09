@@ -15,6 +15,7 @@ import type { UpdateModalProps } from "@/TypeDefinitions/ModalType";
 import Select from "react-select";
 import { TreeDropdown } from "@/components/TreeDropdown";
 import DynamicVariantTabs from "@/components/DynamicTabs";
+import { GeneralPageDropdown } from "@/components/GeneralPageDropdown";
 
 export function UpdateModal<T extends Record<string, any>>(
   props: UpdateModalProps<T>,
@@ -51,12 +52,53 @@ export function UpdateModal<T extends Record<string, any>>(
         onChange={(val) => handleChange(field.key, val)}
       />
     ),
+    boolean: (field) => (
+      <label className="inline-flex items-center cursor-pointer gap-3">
+        <input
+          id={field.key}
+          type="checkbox"
+          checked={!!formData[field.key]}
+          onChange={(e) => handleChange(field.key, e.target.checked)}
+          className="sr-only peer"
+        />
+
+        {/* toggle track */}
+        <div
+          className="w-11 h-6
+                     bg-gray-300
+                     rounded-full
+                     peer-checked:bg-green-500
+                     transition-colors
+                     relative
+                     after:content-['']
+                     after:absolute
+                     after:top-0.5
+                     after:left-0.5
+                     after:bg-white
+                     after:border
+                     after:border-gray-300
+                     after:rounded-full
+                     after:h-5
+                     after:w-5
+                     after:transition-transform
+                     peer-checked:after:translate-x-5"
+        />
+
+      </label>
+    ),
     "select(parent)": (field) => (
       <TreeDropdown
         options={field.options}
         value={formData[field.key] ?? ""}
         onChange={(val) => handleChange(field.key, val)}
         allowParentSelect
+      />
+    ),
+    "select(GeneralPage)": (field) => (
+      <GeneralPageDropdown
+        options={field.options}
+        value={formData[field.key] ?? ""}
+        onChange={(val) => handleChange(field.key, val)}
       />
     ),
 
