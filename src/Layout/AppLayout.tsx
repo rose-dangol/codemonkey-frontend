@@ -139,6 +139,17 @@ export default function AppLayout() {
           },
         ],
       },
+      {
+        title: "Page Management",
+        icon: HomeIcon,
+        children: [
+          {
+            title: "General Pages",
+            url: "/pagmgmt/general",
+            icon: Square,
+          },
+        ]
+      },
 
       {
         title: "Settings",
