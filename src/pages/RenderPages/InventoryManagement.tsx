@@ -12,13 +12,10 @@ import InventoryActionMenu from "@/components/Inventory/InventoryActionMenu";
 import RestockModal from "@/components/Inventory/RestockModal";
 import TransferModal from "@/components/Inventory/TransferModal";
 import AdjustStockModal from "@/components/Inventory/AdjustStockModal";
-import DemoPage from "@/payments/page";
-import { UpdateModal } from "@/Layout/UpdateModal";
-import { addInventoryRecordField } from "@/TypeDefinitions/ModalType";
-import { ProductService } from "@/services/OrderManagement/ProductService";
-import { ProductVariantService } from "@/services/OrderManagement/ProductVariantService";
+
 import { stockStatusService } from "@/services/InventoryManagement/stockStatus.service";
 import { statusColorMap } from "@/TypeDefinitions/common";
+import { DataTable } from "@/payments/data-table";
 
 type ModalType = "restock" | "transfer" | "adjust" | null;
 
@@ -27,16 +24,7 @@ export default function InventoryManagement() {
   const [selectedVariant, setSelectedVariant] = useState<InventoryItem | null>(
     null,
   );
-  const [openAddModal, setOpenAddModal] = useState(false);
 
-  const { data: products } = useQuery({
-    queryKey: ["products"],
-    queryFn: () => ProductService.getAll(),
-  });
-  const { data: productVariant } = useQuery({
-    queryKey: ["productVariant"],
-    queryFn: () => ProductVariantService.getAll(),
-  });
   const { data: stockStatuses = [] } = useQuery({
     queryKey: ["stock-statuses"],
     queryFn: () => stockStatusService.getAll(),
@@ -176,12 +164,12 @@ export default function InventoryManagement() {
           Loading inventory…
         </div>
       ) : (
-        <DemoPage
+        <DataTable
+          id={items.map((i) => i.id)}
+          fields={columns}
           data={items}
-          columns={columns}
-          title="Inventory Item"
-          openAdd={openAddModal}
-          setOpenAdd={setOpenAddModal}
+          enableRowSelection={false}
+          enableColumnVisibility={false}
         />
       )}
 
@@ -206,22 +194,6 @@ export default function InventoryManagement() {
           />
         </>
       )}
-
-      {/* todo: not really needed for now? */}
-      <UpdateModal<InventoryItem>
-        open={openAddModal}
-        setOpen={setOpenAddModal}
-        title="Add a stock data"
-        fields={addInventoryRecordField(
-          products,
-          productVariant,
-          stockStatuses,
-        )}
-        onUpdate={(data) => {
-          handleAdd(data);
-          setOpenAddModal(false);
-        }}
-      />
     </div>
   );
 }

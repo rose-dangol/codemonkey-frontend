@@ -13,3 +13,18 @@ export type ProductVariantType = {
   stockMap?: Record<string, number>;
   totalStock: number;
 };
+
+export interface CreateProductVariantType {
+  id: string;
+  productId: string;
+  cogsData?: Record<string, number>;
+  sku?: string;
+  price: number;
+  attributes?: {
+    id?: string;
+    attributeId?: string;
+    key?: string;
+    value: string;
+  }[];
+  stock?: number;
+}

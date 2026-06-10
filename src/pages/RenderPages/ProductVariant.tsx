@@ -9,7 +9,10 @@ import { SquarePen } from "lucide-react";
 import { ProductService } from "@/services/OrderManagement/ProductService";
 import { AttributeService } from "@/services/OrderManagement/AttributeService";
 import { ProductVariantService } from "@/services/OrderManagement/ProductVariantService";
-import type { ProductVariantType } from "@/TypeDefinitions/ProductVariant";
+import type {
+  CreateProductVariantType,
+  ProductVariantType,
+} from "@/TypeDefinitions/ProductVariant";
 import { toast } from "react-toastify";
 import { CogsService } from "@/services/OrderManagement/CogsService";
 import { stockStatusService } from "@/services/InventoryManagement/stockStatus.service";
@@ -303,7 +306,7 @@ const ProductVariant = () => {
           setOpen(false);
         }}
       />
-      <UpdateModal<ProductVariantType>
+      <UpdateModal<CreateProductVariantType>
         open={openAdd}
         setOpen={setOpenAdd}
         title="Add Product Variant"
@@ -313,6 +316,7 @@ const ProductVariant = () => {
           attributeData,
           cogsData,
           attributeDefinitions,
+          true,
         )}
         onUpdate={(updatedData) => {
           handleAdd(updatedData);

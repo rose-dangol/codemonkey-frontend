@@ -7,7 +7,10 @@ import type { CategoryType } from "./Category";
 import type { CogsDefinitionType } from "./CogsDefinitions";
 import type { StockStatusType } from "./InventoryManagement";
 import type { ProductType } from "./Product";
-import type { ProductVariantType } from "./ProductVariant";
+import type {
+  CreateProductVariantType,
+  ProductVariantType,
+} from "./ProductVariant";
 import type { TagType } from "./Tag";
 
 export type modalType = {
@@ -326,9 +329,9 @@ export const updateProductVariantFields = (
   product?: ProductType[],
   _attributes?: Attributes[],
   cogsData?: CogsDefinitionType[],
-
   attributeDefinitions?: AttributeDefinitionType[],
-): UpdateField<ProductVariantType>[] => {
+  isInitialAdd?: boolean,
+): UpdateField<ProductVariantType | CreateProductVariantType>[] => {
   const buildProductOptions = (pro?: ProductType[]): any[] => {
     if (!pro) return [];
     return pro.map((p) => ({
@@ -357,19 +360,34 @@ export const updateProductVariantFields = (
     }));
   };
 
-  return [
-    {
-      key: "sku",
-      label: "Sku",
-      placeholder: "Enter sku",
-      type: "text",
-    },
+  const stockField: UpdateField<CreateProductVariantType> = {
+    key: "stock",
+    label: "Stock",
+    placeholder: "Enter Stock",
+    type: "number",
+  };
+  const allFields: UpdateField<
+    ProductVariantType | CreateProductVariantType
+  >[] = [
+    { key: "sku", label: "Sku", placeholder: "Enter sku", type: "text" },
     {
       key: "price",
       label: "Price",
       placeholder: "Enter price",
       type: "number",
     },
+    // ...(isInitialAdd
+    //   ? [
+    //       {
+    //         key: "totalStock" as const,
+    //         label: "Stock",
+    //         placeholder: "Enter Stock",
+    //         type: "number",
+    //       },
+    //     ]
+    //   : []),
+
+    ...(isInitialAdd ? [stockField] : []),
     {
       key: "productId",
       label: "Product",
@@ -392,6 +410,9 @@ export const updateProductVariantFields = (
       options: buildCogsOptions(cogsData),
     },
   ];
+  return allFields as UpdateField<
+    ProductVariantType | CreateProductVariantType
+  >[];
 };
 
 //---Stock Status Management
