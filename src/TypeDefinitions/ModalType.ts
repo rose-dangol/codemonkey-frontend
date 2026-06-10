@@ -5,8 +5,12 @@ import type {
 import type { BrandsType } from "./Brands";
 import type { CategoryType } from "./Category";
 import type { CogsDefinitionType } from "./CogsDefinitions";
+import type { StockStatusType } from "./InventoryManagement";
 import type { ProductType } from "./Product";
-import type { ProductVariantType } from "./ProductVariant";
+import type {
+  CreateProductVariantType,
+  ProductVariantType,
+} from "./ProductVariant";
 import type { TagType } from "./Tag";
 
 export type modalType = {
@@ -58,7 +62,8 @@ type UpdateField<T> = {
     | "dropdown"
     | "select(parent)"
     | "tabs"
-    | "image";
+    | "image"
+    | "radio-button";
   options?: { label: string; value: string; children?: any[] }[];
   tabDefinitions?: { id: string; name: string }[];
   cell?: (
@@ -324,9 +329,9 @@ export const updateProductVariantFields = (
   product?: ProductType[],
   _attributes?: Attributes[],
   cogsData?: CogsDefinitionType[],
-
   attributeDefinitions?: AttributeDefinitionType[],
-): UpdateField<ProductVariantType>[] => {
+  isInitialAdd?: boolean,
+): UpdateField<ProductVariantType | CreateProductVariantType>[] => {
   const buildProductOptions = (pro?: ProductType[]): any[] => {
     if (!pro) return [];
     return pro.map((p) => ({
@@ -355,25 +360,34 @@ export const updateProductVariantFields = (
     }));
   };
 
-  return [
-    {
-      key: "sku",
-      label: "Sku",
-      placeholder: "Enter sku",
-      type: "text",
-    },
+  const stockField: UpdateField<CreateProductVariantType> = {
+    key: "stock",
+    label: "Stock",
+    placeholder: "Enter Stock",
+    type: "number",
+  };
+  const allFields: UpdateField<
+    ProductVariantType | CreateProductVariantType
+  >[] = [
+    { key: "sku", label: "Sku", placeholder: "Enter sku", type: "text" },
     {
       key: "price",
       label: "Price",
       placeholder: "Enter price",
       type: "number",
     },
-    {
-      key: "stock",
-      label: "Stock",
-      placeholder: "Enter stock",
-      type: "number",
-    },
+    // ...(isInitialAdd
+    //   ? [
+    //       {
+    //         key: "totalStock" as const,
+    //         label: "Stock",
+    //         placeholder: "Enter Stock",
+    //         type: "number",
+    //       },
+    //     ]
+    //   : []),
+
+    ...(isInitialAdd ? [stockField] : []),
     {
       key: "productId",
       label: "Product",
@@ -394,6 +408,147 @@ export const updateProductVariantFields = (
       placeholder: "Enter cogs",
       type: "tabs",
       options: buildCogsOptions(cogsData),
+    },
+  ];
+  return allFields as UpdateField<
+    ProductVariantType | CreateProductVariantType
+  >[];
+};
+
+//---Stock Status Management
+const activeStatus = () => [
+  { label: "Active", value: true },
+  { label: "Inactive", value: false },
+];
+
+export const stockStatusFields = (): UpdateField<StockStatusType>[] => {
+  return [
+    {
+      key: "name",
+      label: "Status Name",
+      placeholder: "Enter Stock-Status Name",
+      type: "text",
+    },
+    {
+      key: "code",
+      label: "CODE",
+      placeholder: "CODE - ALL CAPS",
+      type: "text",
+    },
+    {
+      key: "description",
+      label: "Description",
+      placeholder: "Enter Stock-Status Description",
+      type: "text",
+    },
+    {
+      key: "isActive",
+      label: "Active Status",
+      type: "radio-button",
+      options: activeStatus(),
+    },
+  ];
+};
+
+export const updateStockStatusFields = (): UpdateField<StockStatusType>[] => {
+  return [
+    {
+      key: "name",
+      label: "Status Name",
+      placeholder: "Enter Stock-Status Name",
+      type: "text",
+    },
+    {
+      key: "description",
+      label: "Description",
+      placeholder: "Enter Stock-Status Description",
+      type: "text",
+    },
+    {
+      key: "isActive",
+      label: "Active Status",
+      type: "radio-button",
+      options: activeStatus(),
+    },
+  ];
+};
+
+export const addInventoryRecordField = (
+  products: ProductType[],
+  productVariants: ProductVariantType[],
+  stockStatuses: StockStatusType[],
+) => {
+  const buildProductOptions = (products: ProductType[]) => {
+    if (!products) return [];
+
+    return products.map((product) => ({
+      label: product.productName,
+      value: product.id,
+    }));
+  };
+
+  const buildStockStatusOptions = (statuses: StockStatusType[]) => {
+    if (!statuses) return [];
+
+    return statuses
+      .filter((status) => status.isActive)
+      .map((status) => ({
+        label: status.name,
+        value: status.id,
+      }));
+  };
+  return [
+    {
+      key: "productId",
+      label: "Product",
+      placeholder: "Select Product",
+      type: "select(parent)",
+      options: buildProductOptions(products),
+    },
+
+    {
+      key: "variantId",
+      label: "Product Variant",
+      placeholder: "Choose Variant",
+      type: "select(dependent)",
+
+      parentKey: "productId",
+
+      sourceData: productVariants,
+
+      getOptions: (productId: string, variants: ProductVariantType[]) => {
+        if (!productId) return [];
+
+        return variants
+          .filter((variant) => variant.productId === productId)
+          .map((variant) => ({
+            label: variant.attributes?.length
+              ? variant.attributes.map((a) => a.value).join(" / ")
+              : variant.sku,
+            value: variant.id,
+          }));
+      },
+    },
+
+    {
+      key: "fromStatus",
+      label: "From Status",
+      type: "select",
+      options: buildStockStatusOptions(stockStatuses),
+    },
+
+    {
+      key: "toStatus",
+      label: "To Status",
+      type: "select",
+      options: buildStockStatusOptions(stockStatuses),
+    },
+
+    {
+      key: "quantity",
+      label: "Quantity",
+      type: "number",
+      placeholder: "Enter quantity",
     },
   ];
 };

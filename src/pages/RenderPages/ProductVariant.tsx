@@ -9,9 +9,14 @@ import { SquarePen } from "lucide-react";
 import { ProductService } from "@/services/OrderManagement/ProductService";
 import { AttributeService } from "@/services/OrderManagement/AttributeService";
 import { ProductVariantService } from "@/services/OrderManagement/ProductVariantService";
-import type { ProductVariantType } from "@/TypeDefinitions/ProductVariant";
+import type {
+  CreateProductVariantType,
+  ProductVariantType,
+} from "@/TypeDefinitions/ProductVariant";
 import { toast } from "react-toastify";
 import { CogsService } from "@/services/OrderManagement/CogsService";
+import { stockStatusService } from "@/services/InventoryManagement/stockStatus.service";
+import type { StockStatusType } from "@/TypeDefinitions/InventoryManagement";
 
 const ProductVariant = () => {
   const [open, setOpen] = useState(false);
@@ -37,6 +42,40 @@ const ProductVariant = () => {
     queryKey: ["cogs"],
     queryFn: () => CogsService.getAll(),
   });
+  const { data: stockStatusTypes } = useQuery({
+    queryKey: ["stockStatusTypes"],
+    queryFn: () => stockStatusService.getAll(),
+  });
+
+  //build dynamic stock column
+  const stockColumns = useMemo<ColumnDef<ProductVariantType>[]>(() => {
+    if (!stockStatusTypes) return [];
+
+    return stockStatusTypes.map((status: StockStatusType) => ({
+      id: status.id,
+      header: status.name.toUpperCase(),
+
+      accessorFn: (row: ProductVariantType) => {
+        return (row.stockMap as Record<string, number>)?.[status.id] ?? 0;
+      },
+
+      cell: ({ getValue }: { getValue: () => number }) => {
+        return getValue();
+      },
+    }));
+  }, [stockStatusTypes]);
+
+  const getStockStatus = (qty: number) => {
+    if (qty === 0) {
+      return { label: "Out of Stock", color: "text-red-500 bg-red-100" };
+    }
+
+    if (qty <= 10) {
+      return { label: "Low Stock", color: "text-yellow-600 bg-yellow-100" };
+    }
+
+    return { label: "In Stock", color: "text-green-600 bg-green-100" };
+  };
 
   // Derive unique attribute definitions from fetched attributes for DynamicTabs
   const attributeDefinitions = useMemo(() => {
@@ -131,11 +170,6 @@ const ProductVariant = () => {
       accessorKey: "price",
       header: "Variant Price",
     },
-
-    {
-      accessorKey: "stock",
-      header: "Stock Quantity",
-    },
     {
       accessorKey: "cogsData",
       header: "Cogs Data",
@@ -189,7 +223,30 @@ const ProductVariant = () => {
         );
       },
     },
+    ...stockColumns,
+    {
+      id: "totalStock",
+      header: "Total Stock",
+      accessorKey: "totalStock",
+    },
+    {
+      id: "status",
+      header: "Status",
+      accessorFn: (row) => row.totalStock,
 
+      cell: ({ getValue }) => {
+        const qty = getValue<number>();
+        const status = getStockStatus(qty);
+
+        return (
+          <span
+            className={`px-3 py-1 rounded-full text-xs font-medium ${status.color}`}
+          >
+            {status.label}
+          </span>
+        );
+      },
+    },
     {
       accessorKey: "action",
       header: "Action",
@@ -249,7 +306,7 @@ const ProductVariant = () => {
           setOpen(false);
         }}
       />
-      <UpdateModal<ProductVariantType>
+      <UpdateModal<CreateProductVariantType>
         open={openAdd}
         setOpen={setOpenAdd}
         title="Add Product Variant"
@@ -259,6 +316,7 @@ const ProductVariant = () => {
           attributeData,
           cogsData,
           attributeDefinitions,
+          true,
         )}
         onUpdate={(updatedData) => {
           handleAdd(updatedData);
