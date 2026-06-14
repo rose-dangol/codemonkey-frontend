@@ -7,7 +7,7 @@ export const TagService = {
     return res.data;
   },
 
-  create: async (data: TagType) => {
+  create: async (data: TagType[]) => {
     const res = await api.post(`tag/addTag`, data);
     return res.data;
   },

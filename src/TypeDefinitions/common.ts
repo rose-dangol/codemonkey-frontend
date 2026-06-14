@@ -15,3 +15,10 @@ export interface DateRangeData<TData = unknown> {
   isError: boolean;
   error: Error | null;
 }
+
+export const statusColorMap: Record<string, string> = {
+  AVAILABLE: "text-green-400",
+  DAMAGED: "text-red-400",
+  RESERVED: "text-blue-400",
+  MISPLACED: "text-orange-400",
+};

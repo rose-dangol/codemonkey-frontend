@@ -157,6 +157,8 @@ export default function DynamicVariantTabs({
   onChange,
 }: DynamicTabsProps) {
   // Stable refs — prevent subscription teardown on every render
+  console.log("value", value)
+  console.log("att",attributeDefinitions)
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
 

@@ -14,7 +14,9 @@ import {
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/contexts/AuthContext";
 import {
+  BoxesIcon,
   ChevronDown,
+  CoinsIcon,
   HomeIcon,
   LeafyGreenIcon,
   LogOutIcon,
@@ -22,7 +24,10 @@ import {
   Settings,
   SettingsIcon,
   Square,
+  TagsIcon,
   TrophyIcon,
+  History,
+  Tags,
   type LucideIcon,
 } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -88,12 +93,12 @@ export default function AppLayout() {
           {
             title: "Attribute Definitions",
             url: "/ordermgmt/attributedeinitions",
-            icon: SettingsIcon,
+            icon: TagsIcon,
           },
           {
             title: "Cogs Definition",
             url: "/ordermgmt/cogsdefinitions",
-            icon: SettingsIcon,
+            icon: CoinsIcon,
           },
           {
             title: "Order Analytics",
@@ -104,6 +109,33 @@ export default function AppLayout() {
             title: "Tags",
             url: "/ordermgmt/tags",
             icon: SettingsIcon,
+          },
+          // {
+          //   title: "Inventory Overview",
+          //   url: "/ordermgmt/inventoryOverview",
+          //   icon: BoxesIcon,
+          // },
+        ],
+      },
+
+      {
+        title: "Inventory Management",
+        icon: BoxesIcon,
+        children: [
+          {
+            title: "Stock Overview",
+            url: "/inventory/overview",
+            icon: BoxesIcon,
+          },
+          {
+            title: "Transaction History",
+            url: "/inventory/transactions",
+            icon: History,
+          },
+          {
+            title: "Stock Statuses",
+            url: "/inventory/stock-statuses",
+            icon: Tags,
           },
         ],
       },

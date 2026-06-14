@@ -4,3 +4,7 @@ export type CogsDefinitionType = {
   key: string;
   isActive?: boolean;
 };
+
+export type Cogs = {
+  [key: string]: string;
+};

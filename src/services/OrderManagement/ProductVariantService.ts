@@ -8,6 +8,11 @@ export const ProductVariantService = {
     return res.data;
   },
 
+  getById: async (id: string) => {
+    const res = await api.get(`productVariant/getProductVariantById/${id}`);
+    return res.data;
+  },
+
   create: async (data: ProductVariantType) => {
     const res = await api.post(`productVariant/addProductVariant`, data);
     return res.data;
