@@ -1,4 +1,6 @@
+import type { BrandsType } from "./Brands";
 import type { ProductVariantType } from "./ProductVariant";
+import type { ProductTag } from "./Tag";
 
 export type ProductType = {
   id: string;
@@ -13,11 +15,8 @@ export type ProductType = {
     categoryName: string;
   } | null;
 
-  brand?: {
-    id: string;
-    brandName: string;
-  } | null;
-  variants?: ProductVariantType[];
+  brand: BrandsType | null;
+  variants: ProductVariantType[];
   attributes?: {
     id: string;
     attributeId: string;
@@ -25,10 +24,14 @@ export type ProductType = {
     value: string;
     serviceTypeId: string;
   }[];
-  tags: {
-    tag: {
-      id: string;
-      name: string;
-    };
-  }[];
+  totalStock: number;
+  // tags: {
+  //   tag: {
+  //     id: string;
+  //     name: string;
+  //   };
+  // }[];
+  tags: ProductTag[];
+  createdAt: string;
+  updatedAt: string;
 };

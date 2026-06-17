@@ -23,6 +23,7 @@ export interface VariantStockBucket {
   quantity: number;
   updatedAt: string;
   stockStatusType: StockStatusType;
+  price: number
 }
 
 // ─── Inventory Overview Row ───────────────────────────────────────────────────

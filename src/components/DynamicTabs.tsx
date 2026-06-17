@@ -157,6 +157,8 @@ export default function DynamicVariantTabs({
   onChange,
 }: DynamicTabsProps) {
   // Stable refs — prevent subscription teardown on every render
+  // console.log("defns", attributeDefinitions);
+  // console.log("values", value);
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
 
@@ -186,7 +188,7 @@ export default function DynamicVariantTabs({
 
       for (const [name, entries] of Object.entries(attrs)) {
         const def = defsRef.current.find((d) => d.name === name);
-        if (!def) continue;
+        if (!def || !def.id) continue;
         for (const entry of entries) {
           if (entry?.value?.trim() && !entry.disabled) {
             payload.push({ attributeId: def.id, value: entry.value });

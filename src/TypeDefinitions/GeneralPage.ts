@@ -1,3 +1,5 @@
+import type { NavigationItemType } from "./NavigationItem";
+
 export interface GeneralPageDto {
   id?: string;
   heading: string;
@@ -6,4 +8,5 @@ export interface GeneralPageDto {
   bannerImage?: string | File | null;
   createdAt?: string;
   updatedAt?: string;
+  navigationItems?: NavigationItemType[];
 }

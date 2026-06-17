@@ -148,7 +148,12 @@ export default function AppLayout() {
             url: "/pagmgmt/general",
             icon: Square,
           },
-        ]
+          {
+            title: "Navigation Items",
+            url: "/pagmgmt/navigationitem",
+            icon: Square,
+          },
+        ],
       },
 
       {

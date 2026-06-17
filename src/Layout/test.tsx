@@ -30,7 +30,6 @@ import { MultiSelectField } from "@/components/MultiSelectField";
 import ToggleSwitch from "@/components/ToggleSwitch";
 import { VariantTab } from "@/components/VariantTab";
 import { cn } from "@/lib/utils";
-import { MultiImageField } from "@/components/MultiImageField";
 
 // ─── Field renderer helpers ────────────────────────────────────────────────────
 
@@ -38,7 +37,6 @@ interface FieldRenderProps {
   field: any;
   controller: ControllerRenderProps<any, any>;
   formValues: FieldValues;
-  fieldState?: any;
 }
 
 const renderSelect = ({ field, controller }: FieldRenderProps) => (
@@ -90,7 +88,7 @@ const renderSelectGeneralPage = ({ field, controller }: FieldRenderProps) => (
 
 const renderToggleSwitch = ({ field, controller }: FieldRenderProps) => (
   <ToggleSwitch
-    checked={true}
+    checked={controller.value ?? false}
     label={field.label}
     onChange={controller.onChange}
   />
@@ -99,10 +97,7 @@ const renderToggleSwitch = ({ field, controller }: FieldRenderProps) => (
 const renderTabs = ({ field, controller }: FieldRenderProps) => {
   const definitions =
     field.tabDefinitions ??
-    field.tabDefinitions?.map((opt: any) => ({
-      id: opt.value,
-      name: opt.label,
-    })) ??
+    field.options?.map((opt: any) => ({ id: opt.value, name: opt.label })) ??
     [];
   return (
     <DynamicVariantTabs
@@ -141,45 +136,17 @@ const renderNumber = ({ field, controller }: FieldRenderProps) => (
   />
 );
 
-const renderTextInput = ({
-  field,
-  controller,
-  fieldState,
-}: FieldRenderProps) => (
-  <>
-    <Input
-      id={field.key}
-      type={field.type ?? "text"}
-      placeholder={field.placeholder ?? `Enter ${field.label}`}
-      value={controller.value ?? ""}
-      onChange={(e) => controller.onChange(e.target.value)}
-      className="description-text"
-    />
-    {fieldState?.error && (
-      <p className="text-red-500 text-xs mt-1">{fieldState.error.message}</p>
-    )}
-  </>
+const renderTextInput = ({ field, controller }: FieldRenderProps) => (
+  <Input
+    id={field.key}
+    type={field.type ?? "text"}
+    placeholder={field.placeholder ?? `Enter ${field.label}`}
+    value={controller.value ?? ""}
+    onChange={(e) => controller.onChange(e.target.value)}
+    className="description-text"
+  />
 );
 
-const renderMultiImage = ({
-  field,
-  controller,
-  fieldState,
-}: FieldRenderProps) => {
-  return (
-    <>
-      <MultiImageField
-        value={controller.value ?? []}
-        onChange={controller.onChange}
-        name={field.key}
-        label={field.label}
-      />
-      {fieldState?.error && (
-        <p className="text-red-500 text-xs mt-1">{fieldState.error.message}</p>
-      )}
-    </>
-  );
-};
 const renderDropdown = ({ field, controller }: FieldRenderProps) => (
   <select
     id={field.key}
@@ -283,7 +250,6 @@ type FieldType =
   | "image"
   | "radio-button"
   | "select(dependent)"
-  | "images"
   | "default";
 
 type RendererFn = (
@@ -308,7 +274,6 @@ const FIELD_RENDERERS: Record<FieldType, RendererFn> = {
   "radio-button": (p) => renderRadioButton(p),
   "select(dependent)": (p) => renderSelectDependent(p),
   default: (p) => renderTextInput(p),
-  images: (p) => renderMultiImage(p),
 };
 
 // ─── Keys hidden while variant mode is active ──────────────────────────────────
@@ -318,7 +283,7 @@ const SKIP_IN_VARIANT_MODE = new Set(["price", "cogs"]);
 const BLANK_VARIANT = {
   sku: "",
   price: 0,
-  stocks: [],
+  stock: 0,
   images: [] as any[],
   attributes: [] as any[],
   cogsData: {} as Record<string, any>,
@@ -400,6 +365,7 @@ export function UpdateModal<T extends Record<string, any>>(
 
   // Active tab index for the variant tab UI
   const [activeVariantIndex, setActiveVariantIndex] = useState(0);
+
   const buildDefaultValues = (): DefaultValues<T> => {
     const tabDefaults = Object.fromEntries(
       props.fields.filter((f) => f.type === "tabs").map((f) => [f.key, []]),
@@ -548,6 +514,7 @@ export function UpdateModal<T extends Record<string, any>>(
       });
 
     pendingCreatesRef.current = {};
+    console.log("data recieved inside of UpdateModal", finalData);
 
     // Variant mode — delegate to parent callbacks
     if (props.variantMode) {
@@ -569,14 +536,8 @@ export function UpdateModal<T extends Record<string, any>>(
     props.onUpdate?.(finalData as Partial<T>);
     props.setOpen(false);
   };
-  // Compute a safe index at render time — never trust state alone
-  const safeActiveIndex = Math.min(
-    activeVariantIndex,
-    Math.max(0, variantFields.length - 1),
-  );
 
-  // const variantMode = props.variantMode ?? false;
-  const variantMode = props.variantMode;
+  const variantMode = props.variantMode ?? false;
 
   return (
     <Dialog open={props.open} onOpenChange={props.setOpen}>
@@ -609,16 +570,14 @@ export function UpdateModal<T extends Record<string, any>>(
                 <Controller
                   name={field.key as any}
                   control={control}
-                  rules={field.rules}
-                  render={({ field: rhfField, fieldState }) =>
+                  render={({ field: rhfField }) =>
                     renderer(
                       {
                         field,
                         controller: rhfField,
                         formValues,
-                        fieldState,
                       },
-                      handlePendingCreate, // yo aaile lai bujnu pardaina
+                      handlePendingCreate,
                     ) as React.ReactElement
                   }
                 />
@@ -636,20 +595,22 @@ export function UpdateModal<T extends Record<string, any>>(
                 <div className="h-px flex-1 bg-border/60" />
               </div>
 
+              {/* Tab bar */}
               <VariantTabBar
                 variantFields={variantFields}
-                activeIndex={safeActiveIndex}
+                activeIndex={activeVariantIndex}
                 getLabel={getVariantLabel}
                 onActivate={setActiveVariantIndex}
                 onRemove={handleRemoveVariant}
                 onAdd={handleAddVariant}
               />
 
-              {variantFields.length > 0 && ( // ← guard on length, not on field lookup
+              {/* Active variant panel */}
+              {variantFields[activeVariantIndex] && (
                 <div className="border border-border rounded-b-md rounded-tr-md p-4">
                   <VariantTab
-                    key={variantFields[safeActiveIndex].id} // ← safe
-                    index={safeActiveIndex} // ← safe
+                    key={variantFields[activeVariantIndex].id}
+                    index={activeVariantIndex}
                     control={control}
                     remove={remove}
                     attributeDefinitions={props.attributeDefinitions ?? []}
@@ -677,9 +638,7 @@ export function UpdateModal<T extends Record<string, any>>(
             </Button>
           </DialogClose>
           <Button
-            onClick={handleSubmit(onSubmit, (errors) =>
-              console.log("Form validation failed errors:", errors),
-            )}
+            onClick={handleSubmit(onSubmit)}
             className="bg-black"
             disabled={isSubmitting}
           >

@@ -8,10 +8,8 @@ export const ProductService = {
     return res.data?.data || res.data;
   },
 
- 
-
   getById: async (id: string) => {
-    const res = await api.get(`product/getProduct/${id}`);
+    const res = await api.get(`product/getProductById/${id}`);
     return res.data;
   },
 

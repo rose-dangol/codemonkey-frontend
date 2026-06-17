@@ -5,6 +5,8 @@ import type {
 import type { BrandsType } from "./Brands";
 import type { CategoryType } from "./Category";
 import type { CogsDefinitionType } from "./CogsDefinitions";
+import type { GeneralPageDto } from "./GeneralPage";
+import type { UpdateNavigationItemDto } from "./NavigationItem";
 import type { StockStatusType } from "./InventoryManagement";
 import type { ProductType } from "./Product";
 import type {
@@ -12,6 +14,7 @@ import type {
   ProductVariantType,
 } from "./ProductVariant";
 import type { TagType } from "./Tag";
+import type { FieldValues, RegisterOptions } from "react-hook-form";
 
 export type modalType = {
   open: boolean;
@@ -28,7 +31,31 @@ export type GetModalProps = {
   title?: string;
 };
 
-export type UpdateModalProps<T = any, O = any> = {
+export type VariantStockPayload = {
+  id?: string;
+  variantId?: string;
+  stockStatusTypeId: string;
+  quantity: number;
+  stockStatusType?: {
+    id?: string;
+    name?: string;
+    code: string;
+    description?: string;
+    isActive?: boolean;
+  };
+};
+
+export type VariantPayload = {
+  id?: string;
+  sku: string;
+  price: number | string;
+  stocks?: VariantStockPayload[];
+  attributes: any;
+  cogsData: any;
+  images: { url: string; sortOrder: number; file?: File }[];
+};
+
+export type UpdateModalProps<T extends FieldValues = any, O = any> = {
   open: boolean;
   setOpen: (open: boolean) => void;
   title?: string;
@@ -36,7 +63,29 @@ export type UpdateModalProps<T = any, O = any> = {
   fields: UpdateField<T>[];
   initialData?: Partial<T>;
   onUpdate?: (updatedData: Partial<T>) => void;
+
+  onAddWithVariants?: (
+    productData: Partial<T>,
+    variants: VariantPayload[],
+  ) => void;
+
+  onUpdateWithVariants?: (
+    productData: Partial<T>,
+    variants: VariantPayload[],
+  ) => void;
   allItems?: O[];
+  variantMode?: boolean;
+  onVariantModeChange?: (isVariant: boolean) => void;
+  variants?: VariantPayload[];
+  onAddVariant?: () => void;
+  onRemoveVariant?: (index: number) => void;
+  onUpdateVariantField?: (
+    index: number,
+    field: keyof VariantPayload,
+    value: any,
+  ) => void;
+  attributeDefinitions?: { id: string; name: string }[];
+  cogsDefinitions?: { id: string; name: string; key: string }[];
 };
 
 export type UpdateCategoryDto = {
@@ -49,10 +98,11 @@ export type UpdateCategoryDto = {
   productCategory?: CategoryType;
 };
 
-type UpdateField<T> = {
+export type UpdateField<T extends FieldValues> = {
   key: Extract<keyof T, string>;
   label: string;
   placeholder?: string;
+  rules?: RegisterOptions<T>;
   type?:
     | "text"
     | "number"
@@ -61,11 +111,23 @@ type UpdateField<T> = {
     | "multi-select"
     | "dropdown"
     | "select(parent)"
+    | "select(dependent)"
     | "tabs"
     | "image"
-    | "radio-button";
+    | "images"
+    | "boolean"
+    | "select(GeneralPage)"
+    | "radio-button"
+    | "toggleSwitch";
   options?: { label: string; value: string; children?: any[] }[];
   tabDefinitions?: { id: string; name: string }[];
+  onCreate?: (payload: { name: string; slug: string }) => Promise<any>;
+  parentKey?: string;
+  sourceData?: any[];
+  getOptions?: (
+    parentValue: any,
+    sourceData: any[],
+  ) => { label: string; value: string }[];
   cell?: (
     row: { original: T },
     allItems?: UpdateCategoryDto[],
@@ -185,15 +247,19 @@ export type UpdateProductDto = {
   productCategoryId?: string;
   productBrandId?: string;
   productImage?: File | string | null;
+  price?: number;
   cogs?: CogsDefinitionType[];
   productTagIds?: string[];
+  multiVariantFlag?: boolean;
 };
 
 export const updateProductFields = (
   brands?: BrandsType[],
   categories?: CategoryType[],
-  tags?: TagType[],
+  // tags?: TagType[],
   currentId?: string,
+  cogs?: CogsDefinitionType[],
+  // onCreateTag?: (payload: { name: string; slug: string }) => Promise<any>,
 ): UpdateField<UpdateProductDto>[] => {
   const buildCategoryOptions = (cats?: CategoryType[]): any[] => {
     if (!cats) return [];
@@ -208,6 +274,15 @@ export const updateProductFields = (
             : undefined,
       }));
   };
+  const buildCogsOptions = (
+    cogs?: CogsDefinitionType[],
+  ): { id: string; name: string }[] => {
+    if (!cogs) return [];
+    return cogs.map((c) => ({
+      id: c.id ?? c.key,
+      name: c.name,
+    }));
+  };
 
   const buildBrandOptions = (brand?: BrandsType[]): any[] => {
     if (!brand) return [];
@@ -217,13 +292,13 @@ export const updateProductFields = (
     }));
   };
 
-  const buildTagOptions = (tag?: TagType[]): any[] => {
-    if (!tag) return [];
-    return tag.map((t) => ({
-      label: t.name,
-      value: t.id,
-    }));
-  };
+  // const buildTagOptions = (tag?: TagType[]): any[] => {
+  //   if (!tag) return [];
+  //   return tag.map((t) => ({
+  //     label: t.name,
+  //     value: t.id,
+  //   }));
+  // };
 
   return [
     {
@@ -231,13 +306,9 @@ export const updateProductFields = (
       label: "Product Name",
       placeholder: "Enter product name",
       type: "text",
+      rules: { required: "Product name is required" },
     },
-    {
-      key: "quantity",
-      label: "Quantity",
-      placeholder: "Enter quantity",
-      type: "number",
-    },
+
     {
       key: "productCategoryId",
       label: "Product Category",
@@ -252,18 +323,113 @@ export const updateProductFields = (
       type: "select(parent)",
       options: buildBrandOptions(brands),
     },
-    {
-      key: "productTagIds",
-      label: "Tags",
-      placeholder: "Enter tags",
-      type: "multi-select",
-      options: buildTagOptions(tags),
-    },
+    // {
+    //   key: "productTagIds",
+    //   label: "Tags",
+    //   placeholder: "Enter tags",
+    //   type: "multi-select",
+    //   options: buildTagOptions(tags),
+    //   onCreate: onCreateTag,
+    // },
     {
       key: "productImage",
       label: "Product Image",
       placeholder: "Enter image url",
       type: "image",
+    },
+    {
+      key: "multiVariantFlag",
+      label: "Have Multiple Variants?",
+      type: "toggleSwitch",
+    },
+
+    {
+      key: "quantity" as const,
+      label: "Quantity",
+      placeholder: "Enter quantity",
+      type: "number" as const,
+    },
+
+    {
+      key: "price",
+      label: "Price",
+      placeholder: "Enter price",
+      type: "number",
+    },
+    {
+      key: "cogs",
+      label: "Cogs",
+      placeholder: "Enter cogs",
+      type: "tabs",
+      tabDefinitions: buildCogsOptions(cogs),
+    },
+  ];
+};
+
+export const updateNavigationItemFields = (
+  pages?: GeneralPageDto[],
+  currentId?: string,
+): UpdateField<UpdateNavigationItemDto>[] => {
+  const buildPageOptions = (pages?: GeneralPageDto[], currentId?: string) => {
+    if (!pages) return [];
+
+    return pages.map((p) => {
+      const navItems = p.navigationItems ?? [];
+      const hasNavItems = navItems.length > 0;
+
+      const isCurrentPage = currentId
+        ? navItems.some((n) => n.id === currentId)
+        : false;
+
+      const otherNavItems = currentId
+        ? navItems.filter((n) => n.id !== currentId)
+        : navItems;
+
+      const disabled = hasNavItems || otherNavItems.length > 0;
+
+      let disabledReason: string | undefined;
+      if (disabled) {
+        const linkedNames = otherNavItems
+          .map((n) => n.label || `Nav ${n.id}`)
+          .join(", ");
+        disabledReason = `Linked to: ${linkedNames}`;
+      }
+
+      return {
+        label: p.heading,
+        value: p.id || "",
+        disabled,
+        disabledReason,
+        isCurrentSelection: isCurrentPage,
+      };
+    });
+  };
+
+  return [
+    {
+      key: "label",
+      label: "Label",
+      placeholder: "Enter label",
+      type: "text",
+    },
+    {
+      key: "pageId",
+      label: "Page",
+      placeholder: "Enter page",
+      type: "select(GeneralPage)",
+      options: buildPageOptions(pages, currentId),
+    },
+
+    {
+      key: "sortOrder",
+      label: "Sort Order",
+      placeholder: "Enter sort order",
+      type: "number",
+    },
+    {
+      key: "isVisible",
+      label: "Visible",
+      type: "boolean",
     },
   ];
 };
@@ -352,23 +518,21 @@ export const updateProductVariantFields = (
 
   const buildCogsOptions = (
     cogs?: CogsDefinitionType[],
-  ): { label: string; value: string }[] => {
+  ): { id: string; name: string }[] => {
     if (!cogs) return [];
     return cogs.map((c) => ({
-      label: c.key,
-      value: c.name,
+      id: c.id ?? c.key,
+      name: c.name,
     }));
   };
 
   const stockField: UpdateField<CreateProductVariantType> = {
-    key: "stock",
+    key: "stocks",
     label: "Stock",
     placeholder: "Enter Stock",
     type: "number",
   };
-  const allFields: UpdateField<
-    ProductVariantType | CreateProductVariantType
-  >[] = [
+  const allFields: UpdateField<CreateProductVariantType>[] = [
     { key: "sku", label: "Sku", placeholder: "Enter sku", type: "text" },
     {
       key: "price",
@@ -376,6 +540,7 @@ export const updateProductVariantFields = (
       placeholder: "Enter price",
       type: "number",
     },
+
     // ...(isInitialAdd
     //   ? [
     //       {
@@ -396,6 +561,19 @@ export const updateProductVariantFields = (
       options: buildProductOptions(product),
     },
     {
+      key: "images",
+      label: "Variant Images",
+      placeholder: "Enter images",
+      type: "images",
+      rules: {
+        validate: (val: any) =>
+          (Array.isArray(val) &&
+            val.length > 0 &&
+            val.some((img: any) => img.file || img.url)) ||
+          "At least one image is required",
+      },
+    },
+    {
       key: "attributes",
       label: "Attributes",
       placeholder: "Enter attributes",
@@ -407,7 +585,7 @@ export const updateProductVariantFields = (
       label: "Cogs",
       placeholder: "Enter cogs",
       type: "tabs",
-      options: buildCogsOptions(cogsData),
+      tabDefinitions: buildCogsOptions(cogsData),
     },
   ];
   return allFields as UpdateField<
@@ -417,8 +595,8 @@ export const updateProductVariantFields = (
 
 //---Stock Status Management
 const activeStatus = () => [
-  { label: "Active", value: true },
-  { label: "Inactive", value: false },
+  { label: "Active", value: "Active" },
+  { label: "Inactive", value: "Inactive" },
 ];
 
 export const stockStatusFields = (): UpdateField<StockStatusType>[] => {

@@ -23,6 +23,8 @@ import InventoryTransactionHistory from "@/pages/RenderPages/InventoryTransactio
 import StockStatusManagement from "@/pages/RenderPages/StockStatusManagement";
 import GeneralPage from "@/pages/NavigationItem/GeneralPage";
 import GeneralPageCreate from "@/pages/NavigationItem/GeneralPageCreate";
+import NavigationItem from "@/pages/NavigationItem/NavigationItem";
+import ProductDetailPage from "@/pages/DetailPages/ProductDetail";
 
 const Router = () => {
   return (
@@ -44,8 +46,13 @@ const Router = () => {
           <Route path="/ordermgmt/products" element={<Product />} />
           <Route path="/ordermgmt/tags" element={<Tags />} />
           <Route path="/pagmgmt/general" element={<GeneralPage />} />
+          <Route path ="/product/view/:id" element={<ProductDetailPage/>}/>
           <Route path="/generalPage/create" element={<GeneralPageCreate />} />
-          <Route path="/generalPage/update/:id" element={<GeneralPageCreate />} />
+          <Route
+            path="/generalPage/update/:id"
+            element={<GeneralPageCreate />}
+          />
+          <Route path="/pagmgmt/navigationitem" element={<NavigationItem />} />
 
           <Route
             path="/ordermgmt/productvariant"

@@ -130,7 +130,7 @@ export default function InventoryManagement() {
     },
     {
       id: "actions",
-      header: "",
+      header: "Actions",
       enableSorting: false,
       enableHiding: false,
       cell: ({ row }) => (
