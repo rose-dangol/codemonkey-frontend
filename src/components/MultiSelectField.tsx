@@ -4,13 +4,13 @@ import { useState, useEffect } from "react";
 type MultiSelectFieldProps = {
   field: any;
   value?: any[];
-  onChange?: (key: string, value: any) => void;
+  // onChange?: (key: string, value: any) => void; // onchange ma kei error aayo vane this is fall backtype
+  onChange?: ((value: any) => void) | ((key: string, value: any) => void);
   onPendingCreate?: (
     fieldKey: string,
     payload: { name: string; slug: string },
   ) => void;
 };
-
 
 function toSlug(name: string): string {
   return name.trim().toLowerCase().replace(/\s+/g, "-");
@@ -23,8 +23,8 @@ export function MultiSelectField({
   onPendingCreate,
 }: MultiSelectFieldProps) {
   // Keep a local controlled list of options (pre-existing + newly typed)
-    const [localOptions, setLocalOptions] = useState<any[]>(field.options ?? []);
-  
+  const [localOptions, setLocalOptions] = useState<any[]>(field.options ?? []);
+
   useEffect(() => {
     setLocalOptions(field.options ?? []);
   }, [field.options]);

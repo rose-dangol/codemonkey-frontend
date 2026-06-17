@@ -56,7 +56,7 @@ const ProductVariant = () => {
       header: status.name.toUpperCase(),
 
       accessorFn: (row: ProductVariantType) => {
-        return (row.stockMap as Record<string, number>)?.[status.id] ?? 0;
+        return (row?.stockMap as Record<string, number>)?.[status.id] ?? 0;
       },
 
       cell: ({ getValue }: { getValue: () => number }) => {
@@ -146,14 +146,11 @@ const ProductVariant = () => {
     const formattedData = {
       ...data,
       cogsData: Array.isArray(data.cogsData)
-        ? data.cogsData.reduce(
-            (acc, item) => {
-              acc[item.attributeId] = item.value;
-              return acc;
-            },
-            {} as Record<string, string>,
-          )
-        : data.cogsData,
+        ? data.cogsData.map((item) => ({
+            attributeId: item.attributeId,
+            value: item.value,
+          }))
+        : [],
     } as ProductVariantType;
 
     console.log("formattedData", formattedData);
@@ -294,7 +291,7 @@ const ProductVariant = () => {
         setOpenAdd={setOpenAdd}
         title={"Product Variant"}
       />
-      <UpdateModal<ProductVariantType>
+      <UpdateModal<ProductVariantType | CreateProductVariantType>
         open={open}
         setOpen={setOpen}
         title="Update Product Variant"

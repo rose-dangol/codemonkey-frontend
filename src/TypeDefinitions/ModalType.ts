@@ -14,6 +14,7 @@ import type {
   ProductVariantType,
 } from "./ProductVariant";
 import type { TagType } from "./Tag";
+import type { FieldValues, RegisterOptions } from "react-hook-form";
 
 export type modalType = {
   open: boolean;
@@ -30,16 +31,31 @@ export type GetModalProps = {
   title?: string;
 };
 
+export type VariantStockPayload = {
+  id?: string;
+  variantId?: string;
+  stockStatusTypeId: string;
+  quantity: number;
+  stockStatusType?: {
+    id?: string;
+    name?: string;
+    code: string;
+    description?: string;
+    isActive?: boolean;
+  };
+};
+
 export type VariantPayload = {
   id?: string;
   sku: string;
   price: number | string;
-  stock?: number | string;
+  stocks?: VariantStockPayload[];
   attributes: any;
   cogsData: any;
+  images: { url: string; sortOrder: number; file?: File }[];
 };
 
-export type UpdateModalProps<T = any, O = any> = {
+export type UpdateModalProps<T extends FieldValues = any, O = any> = {
   open: boolean;
   setOpen: (open: boolean) => void;
   title?: string;
@@ -47,38 +63,28 @@ export type UpdateModalProps<T = any, O = any> = {
   fields: UpdateField<T>[];
   initialData?: Partial<T>;
   onUpdate?: (updatedData: Partial<T>) => void;
-  /** Called instead of onUpdate when multiVariantFlag is ON (add flow only) */
+
   onAddWithVariants?: (
     productData: Partial<T>,
     variants: VariantPayload[],
   ) => void;
-  /** Called instead of onUpdate when multiVariantFlag is ON (update flow only) */
+
   onUpdateWithVariants?: (
     productData: Partial<T>,
     variants: VariantPayload[],
   ) => void;
   allItems?: O[];
-
-  // ── Controlled variant props (owned by parent, e.g. Product.tsx) ──────────
-  /** Whether the product-variant toggle is ON. Controlled by parent. */
   variantMode?: boolean;
-  /** Fired when the variant toggle changes so the parent can update its state. */
   onVariantModeChange?: (isVariant: boolean) => void;
-  /** Variant list managed by parent. */
   variants?: VariantPayload[];
-  /** Add a blank variant. */
   onAddVariant?: () => void;
-  /** Remove variant at index. */
   onRemoveVariant?: (index: number) => void;
-  /** Update a field on a variant at index. */
   onUpdateVariantField?: (
     index: number,
     field: keyof VariantPayload,
     value: any,
   ) => void;
-  /** Attribute definitions fetched by parent for the attributes tab. */
   attributeDefinitions?: { id: string; name: string }[];
-  /** Cogs definitions fetched by parent for the cogsData section. */
   cogsDefinitions?: { id: string; name: string; key: string }[];
 };
 
@@ -92,10 +98,11 @@ export type UpdateCategoryDto = {
   productCategory?: CategoryType;
 };
 
-export type UpdateField<T> = {
+export type UpdateField<T extends FieldValues> = {
   key: Extract<keyof T, string>;
   label: string;
   placeholder?: string;
+  rules?: RegisterOptions<T>;
   type?:
     | "text"
     | "number"
@@ -107,6 +114,7 @@ export type UpdateField<T> = {
     | "select(dependent)"
     | "tabs"
     | "image"
+    | "images"
     | "boolean"
     | "select(GeneralPage)"
     | "radio-button"
@@ -268,11 +276,11 @@ export const updateProductFields = (
   };
   const buildCogsOptions = (
     cogs?: CogsDefinitionType[],
-  ): { label: string; value: string }[] => {
+  ): { id: string; name: string }[] => {
     if (!cogs) return [];
     return cogs.map((c) => ({
-      label: c.key,
-      value: c.name,
+      id: c.id ?? c.key,
+      name: c.name,
     }));
   };
 
@@ -298,6 +306,7 @@ export const updateProductFields = (
       label: "Product Name",
       placeholder: "Enter product name",
       type: "text",
+      rules: { required: "Product name is required" },
     },
 
     {
@@ -352,7 +361,7 @@ export const updateProductFields = (
       label: "Cogs",
       placeholder: "Enter cogs",
       type: "tabs",
-      options: buildCogsOptions(cogs),
+      tabDefinitions: buildCogsOptions(cogs),
     },
   ];
 };
@@ -509,23 +518,21 @@ export const updateProductVariantFields = (
 
   const buildCogsOptions = (
     cogs?: CogsDefinitionType[],
-  ): { label: string; value: string }[] => {
+  ): { id: string; name: string }[] => {
     if (!cogs) return [];
     return cogs.map((c) => ({
-      label: c.key,
-      value: c.name,
+      id: c.id ?? c.key,
+      name: c.name,
     }));
   };
 
   const stockField: UpdateField<CreateProductVariantType> = {
-    key: "stock",
+    key: "stocks",
     label: "Stock",
     placeholder: "Enter Stock",
     type: "number",
   };
-  const allFields: UpdateField<
-    ProductVariantType | CreateProductVariantType
-  >[] = [
+  const allFields: UpdateField<CreateProductVariantType>[] = [
     { key: "sku", label: "Sku", placeholder: "Enter sku", type: "text" },
     {
       key: "price",
@@ -554,6 +561,19 @@ export const updateProductVariantFields = (
       options: buildProductOptions(product),
     },
     {
+      key: "images",
+      label: "Variant Images",
+      placeholder: "Enter images",
+      type: "images",
+      rules: {
+        validate: (val: any) =>
+          (Array.isArray(val) &&
+            val.length > 0 &&
+            val.some((img: any) => img.file || img.url)) ||
+          "At least one image is required",
+      },
+    },
+    {
       key: "attributes",
       label: "Attributes",
       placeholder: "Enter attributes",
@@ -565,7 +585,7 @@ export const updateProductVariantFields = (
       label: "Cogs",
       placeholder: "Enter cogs",
       type: "tabs",
-      options: buildCogsOptions(cogsData),
+      tabDefinitions: buildCogsOptions(cogsData),
     },
   ];
   return allFields as UpdateField<

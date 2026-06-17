@@ -25,9 +25,10 @@ import type { ProductVariantType } from "@/TypeDefinitions/ProductVariant";
 const blankVariant = (): VariantPayload => ({
   sku: "",
   price: "",
-  stock: "",
+  stocks: [],
   attributes: [],
   cogsData: {},
+  images: [],
 });
 
 const Product = () => {
@@ -38,29 +39,32 @@ const Product = () => {
   );
 
   // ── Variant state (owned here, passed down to UpdateModal) ────────────────
-  const [isVariantMode, setIsVariantMode] = useState(false);
+  // const [isVariantMode, setIsVariantMode] = useState(false);
   const [variants, setVariants] = useState<VariantPayload[]>([blankVariant()]);
 
-  const addVariant = () => setVariants((prev) => [...prev, blankVariant()]);
+  // const addVariant = () => setVariants((prev) => [...prev, blankVariant()]);
 
-  const removeVariant = (index: number) =>
-    setVariants((prev) => prev.filter((_, i) => i !== index));
+  // const removeVariant = (index: number) =>
+  //   setVariants((prev) => prev.filter((_, i) => i !== index));
 
-  const updateVariantField = (
-    index: number,
-    field: keyof VariantPayload,
-    value: any,
-  ) =>
-    setVariants((prev) => {
-      const next = [...prev];
-      next[index] = { ...next[index], [field]: value };
-      return next;
-    });
+  // const updateVariantField = (
+  //   index: number,
+  //   field: keyof VariantPayload,
+  //   value: any,
+  // ) =>
+  //   setVariants((prev) => {
+  //     const next = [...prev];
+  //     next[index] = { ...next[index], [field]: value };
+  //     return next;
+  //   });
 
   // Reset variant state whenever the Add modal opens/closes
   const handleSetOpenAdd = (val: boolean) => {
     if (!val) {
-      setIsVariantMode(false);
+      // setIsVariantMode(false);
+      setVariants([blankVariant()]);
+    } else {
+      // setIsVariantMode(true);
       setVariants([blankVariant()]);
     }
     setOpenAdd(val);
@@ -128,8 +132,9 @@ const Product = () => {
   });
 
   const addMutationVariant = useMutation({
-    mutationFn: (data: ProductVariantType) =>
-      ProductVariantService.create(data),
+    mutationFn: (data: ProductVariantType) => {
+      return ProductVariantService.create(data);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["productVariant"] });
       toast.success("Product Variant created successfully");
@@ -142,6 +147,7 @@ const Product = () => {
 
   const addMutation = useMutation({
     mutationFn: (data: UpdateProductDto) => ProductService.create({ ...data }),
+
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
 
@@ -193,10 +199,10 @@ const Product = () => {
 
   const handleOpenEdit = (product: ProductType) => {
     setSelectedProduct(product);
-    const hasVariants =
-      !!(product as any).multiVariantFlag ||
-      (product.variants && product.variants.length > 0);
-    setIsVariantMode(hasVariants);
+    // const hasVariants =
+    //   !!(product as any).multiVariantFlag ||
+    //   (product.variants && product.variants.length > 0);
+    // setIsVariantMode(hasVariants);
 
     if (product.variants && product.variants.length > 0) {
       const mapped = product.variants.map((v) => {
@@ -224,6 +230,8 @@ const Product = () => {
           price: v.price ?? "",
           attributes,
           cogsData: cogsObj,
+          images: v.images ?? [],
+          stocks: v.stocks ?? [],
         };
       });
       setVariants(mapped);
@@ -235,7 +243,7 @@ const Product = () => {
 
   const handleSetOpenEdit = (val: boolean) => {
     if (!val) {
-      setIsVariantMode(false);
+      // setIsVariantMode(false);
       setVariants([blankVariant()]);
       setSelectedProduct(null);
     }
@@ -246,11 +254,9 @@ const Product = () => {
     deleteMutation.mutate(id);
   };
 
-  const handleAdd = (data: Partial<UpdateProductDto>) => {
-    console.log("data", data);
-
-    addMutation.mutate(data as UpdateProductDto);
-  };
+  // const handleAdd = (data: Partial<UpdateProductDto>) => {
+  //   addMutation.mutate(data as UpdateProductDto);
+  // };
 
   /**
    * Variant creation flow:
@@ -261,6 +267,7 @@ const Product = () => {
     productData: Partial<UpdateProductDto>,
     variantList: VariantPayload[],
   ) => {
+    console.log("vlist", variantList);
     try {
       const created = await ProductService.create(
         productData as UpdateProductDto,
@@ -277,20 +284,19 @@ const Product = () => {
 
       await Promise.all(
         variantList.map((v) => {
-          // cogsData comes in as Record<key, value> — pass through as-is
-          const cogsPayload =
-            typeof v.cogsData === "object" && !Array.isArray(v.cogsData)
-              ? v.cogsData
-              : {};
-
           return ProductVariantService.create({
             productId,
             sku: v.sku,
             price: Number(v.price),
-            stock: Number(v.stock),
-            // attributes arrive as AttributePayloadItem[] from DynamicVariantTabs
+            stock:
+              v.stocks?.[0]?.quantity !== undefined
+                ? Number(v.stocks[0].quantity)
+                : v.stocks !== undefined
+                  ? Number(v.stocks)
+                  : 0,
             attributes: Array.isArray(v.attributes) ? v.attributes : [],
-            cogsData: cogsPayload,
+            cogsData: v.cogsData ?? {},
+            images: v.images,
           } as any);
         }),
       );
@@ -332,18 +338,19 @@ const Product = () => {
       // 3. Create or update variants in parallel
       await Promise.all(
         variantList.map((v) => {
-          const cogsPayload =
-            typeof v.cogsData === "object" && !Array.isArray(v.cogsData)
-              ? v.cogsData
-              : {};
-
           const payload = {
             productId,
             sku: v.sku,
             price: Number(v.price),
-            stock: Number(v.stock),
+            stock:
+              v.stocks?.[0]?.quantity !== undefined
+                ? Number(v.stocks[0].quantity)
+                : v.stocks !== undefined
+                  ? Number(v.stocks)
+                  : 0,
             attributes: Array.isArray(v.attributes) ? v.attributes : [],
-            cogsData: cogsPayload,
+            cogsData: v.cogsData ?? {},
+            images: v.images,
           } as any;
 
           if (v.id) {
@@ -469,21 +476,18 @@ const Product = () => {
               : {}
           }
           allItems={productCategory}
-          onUpdate={(updatedData) => {
-            handleUpdate(updatedData);
-            handleSetOpenEdit(false);
-          }}
+          // onUpdate={(updatedData) => {
+          //   handleUpdate(updatedData);
+          //   handleSetOpenEdit(false);
+          // }}
           onUpdateWithVariants={(productData, variantList) => {
             handleUpdateWithVariants(productData, variantList);
             handleSetOpenEdit(false);
           }}
           // ── Controlled variant props ──────────────────────────────────────
-          variantMode={isVariantMode}
-          onVariantModeChange={setIsVariantMode}
+          // variantMode={isVariantMode}
+          variantMode={true}
           variants={variants}
-          onAddVariant={addVariant}
-          onRemoveVariant={removeVariant}
-          onUpdateVariantField={updateVariantField}
           attributeDefinitions={attributeDefinitions}
           cogsDefinitions={cogsDefinitions}
         />
@@ -500,21 +504,19 @@ const Product = () => {
             undefined,
             cogsDefinitions,
           )}
-          onUpdate={(updatedData) => {
-            handleAdd(updatedData);
-            handleSetOpenAdd(false);
-          }}
+          // onUpdate={(updatedData) => {
+          //   handleAdd(updatedData);
+          //   handleSetOpenAdd(false);
+          // }}
           onAddWithVariants={(productData, variantList) => {
             handleAddWithVariants(productData, variantList);
             handleSetOpenAdd(false);
           }}
           // ── Controlled variant props ──────────────────────────────────────
-          variantMode={isVariantMode}
-          onVariantModeChange={setIsVariantMode}
+          // variantMode={isVariantMode}
+          variantMode={true}
+          // onVariantModeChange={setIsVariantMode}
           variants={variants}
-          onAddVariant={addVariant}
-          onRemoveVariant={removeVariant}
-          onUpdateVariantField={updateVariantField}
           attributeDefinitions={attributeDefinitions}
           cogsDefinitions={cogsDefinitions}
         />

@@ -13,7 +13,7 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
   onChange,
 }) => {
   return (
-    <label className="flex items-center gap-3 cursor-pointer select-none">
+    <label className="hidden flex items-center gap-3 cursor-pointer select-none">
       {/* Hidden checkbox for accessibility */}
       <input
         type="checkbox"

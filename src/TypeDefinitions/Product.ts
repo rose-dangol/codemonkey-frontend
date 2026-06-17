@@ -24,6 +24,7 @@ export type ProductType = {
     value: string;
     serviceTypeId: string;
   }[];
+  totalStock: number;
   // tags: {
   //   tag: {
   //     id: string;

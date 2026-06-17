@@ -1,14 +1,20 @@
 import { MultiSelectField } from "@/components/MultiSelectField";
 import { UpdateModal } from "@/Layout/UpdateModal";
-import { stockStatusService } from "@/services/InventoryManagement/stockStatus.service";
+
 import { AttributeService } from "@/services/OrderManagement/AttributeService";
 import { CogsService } from "@/services/OrderManagement/CogsService";
 import { ProductService } from "@/services/OrderManagement/ProductService";
 import { ProductVariantService } from "@/services/OrderManagement/ProductVariantService";
 import { TagService } from "@/services/Tags/TagService";
-import { updateProductVariantFields, type UpdateProductDto,  } from "@/TypeDefinitions/ModalType";
+import {
+  updateProductVariantFields,
+  type UpdateProductDto,
+} from "@/TypeDefinitions/ModalType";
 import type { ProductType } from "@/TypeDefinitions/Product";
-import type { ProductVariantType } from "@/TypeDefinitions/ProductVariant";
+import type {
+  CreateProductVariantType,
+  ProductVariantType,
+} from "@/TypeDefinitions/ProductVariant";
 import type { TagType } from "@/TypeDefinitions/Tag";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect, useMemo, useRef } from "react";
@@ -49,39 +55,6 @@ const PlusIcon = () => (
   </svg>
 );
 
-const XIcon = ({ size = 12 }: { size?: number }) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2.5"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <line x1="18" y1="6" x2="6" y2="18" />
-    <line x1="6" y1="6" x2="18" y2="18" />
-  </svg>
-);
-
-const UploadIcon = () => (
-  <svg
-    width="14"
-    height="14"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <polyline points="16 16 12 12 8 16" />
-    <line x1="12" y1="12" x2="12" y2="21" />
-    <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" />
-  </svg>
-);
-
 const ImageIcon = () => (
   <svg
     width="14"
@@ -96,21 +69,6 @@ const ImageIcon = () => (
     <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
     <circle cx="8.5" cy="8.5" r="1.5" />
     <polyline points="21 15 16 10 5 21" />
-  </svg>
-);
-
-const CheckIcon = () => (
-  <svg
-    width="14"
-    height="14"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2.5"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <polyline points="20 6 9 17 4 12" />
   </svg>
 );
 
@@ -132,22 +90,6 @@ const TrashIcon = () => (
   </svg>
 );
 
-const TagIcon = () => (
-  <svg
-    width="13"
-    height="13"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
-    <line x1="7" y1="7" x2="7.01" y2="7" />
-  </svg>
-);
-
 function formatCurrency(val: string | number): string {
   const n = Number(val);
   return isNaN(n)
@@ -158,20 +100,23 @@ function formatCurrency(val: string | number): string {
       })}`;
 }
 
-function normaliseCogsData(cogsData: unknown): Record<string, string> {
+function normaliseCogsData(
+  cogsData: unknown,
+): Record<string, { value: string; name: string }> {
   if (!cogsData) return {};
 
   if (Array.isArray(cogsData)) {
     return Object.fromEntries(
-      cogsData.map((entry: { attributeId: string; value: string }) => [
-        entry.attributeId,
-        entry.value,
-      ]),
+      cogsData.map(
+        (entry: { attributeId: string; value: string; name: string }) => [
+          entry.attributeId,
+          {
+            value: entry.value,
+            name: entry.name,
+          },
+        ],
+      ),
     );
-  }
-
-  if (typeof cogsData === "object") {
-    return cogsData as Record<string, string>;
   }
 
   return {};
@@ -179,7 +124,11 @@ function normaliseCogsData(cogsData: unknown): Record<string, string> {
 
 function totalCogs(cogsData: unknown): number {
   const normalised = normaliseCogsData(cogsData);
-  return Object.values(normalised).reduce((sum, v) => sum + Number(v), 0);
+
+  return Object.values(normalised).reduce(
+    (sum, item) => sum + Number(item.value),
+    0,
+  );
 }
 
 function VariantRow({
@@ -192,13 +141,16 @@ function VariantRow({
   onDelete?: (id: string[]) => void;
 }) {
   const cogs = normaliseCogsData(variant.cogsData);
+
   const cogsEntries = Object.entries(cogs);
+  console.log(variant);
 
   const attributeSummary = (variant.attributes ?? [])
-    .map((a) => `${a?.attribute?.key}: ${a?.value}`)
+    .map((a) => `${a?.name}: ${a?.value}`)
     .join(" · ");
 
-  const hasStock = (variant.stocks ?? []).length > 0;
+  const hasStock =
+    (variant.stocks ?? []).filter((s) => s.quantity > 0).length > 0;
 
   return (
     <div className="group flex items-center justify-between gap-6 px-5 py-4 border border-gray-200 rounded-xl bg-white shadow-sm hover:border-gray-300 transition-colors">
@@ -228,7 +180,7 @@ function VariantRow({
         </p>
         {hasStock ? (
           <div className="flex flex-wrap gap-1.5">
-            {variant.stocks.map((s) => (
+            {variant.stocks?.map((s) => (
               <span
                 key={s.id}
                 className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold rounded-md"
@@ -255,13 +207,13 @@ function VariantRow({
         <div className="inline-block text-left min-w-[100px]">
           {cogsEntries.length > 0 ? (
             <div className="space-y-0.5">
-              {cogsEntries.map(([key, value]) => (
+              {cogsEntries.map(([key, data]) => (
                 <div key={key} className="flex justify-between gap-3 text-xs">
                   <span className="text-gray-400 font-medium capitalize">
-                    {key}:
+                    {data?.name || key}:
                   </span>
                   <span className="text-gray-700 font-semibold">
-                    {formatCurrency(value)}
+                    {formatCurrency(data?.value)}
                   </span>
                 </div>
               ))}
@@ -318,20 +270,19 @@ export default function ProductDetailPage() {
     enabled: !!id,
   });
 
-  const flatTags: TagType[] = (productData?.tags ?? []).map((pt) => pt.tag);
   const [updateOpen, setUpdateOpen] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
   const [selectedVariant, setSelectedVariant] =
     useState<ProductVariantType | null>(null);
   const [productName, setProductName] = useState("");
-  const [editingName, setEditingName] = useState(false);
+  const [, setEditingName] = useState(false);
   const [productImage, setProductImage] = useState<string | null>(null);
 
   const queryClient = useQueryClient();
 
   const [changed, setChanged] = useState(false);
   const [tagsData, setTagsData] = useState<string[]>(
-    productData?.tags.map((tag: any) => tag.tagId) ?? [],
+    productData?.tags.map((tag) => tag.tagId) ?? [],
   );
   const pendingTagsRef = useRef<Array<{ name: string; slug: string }>>([]);
 
@@ -339,12 +290,10 @@ export default function ProductDetailPage() {
     if (!productData) return;
     setProductName(productData.productName);
     setProductImage(productData.productImage ?? null);
-    setTagsData(productData.tags.map((tag: any) => tag.tagId));
+    setTagsData(productData.tags.map((tag) => tag.tagId));
     pendingTagsRef.current = [];
     setChanged(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productData]);
-
 
   const variants: ProductVariantType[] = productData?.variants ?? [];
 
@@ -442,14 +391,11 @@ export default function ProductDetailPage() {
     const formattedData = {
       ...data,
       cogsData: Array.isArray(data.cogsData)
-        ? data.cogsData.reduce(
-            (acc, item) => {
-              acc[item.attributeId] = item.value;
-              return acc;
-            },
-            {} as Record<string, string>,
-          )
-        : data.cogsData,
+        ? data.cogsData.map((item) => ({
+            attributeId: item.attributeId,
+            value: item.value,
+          }))
+        : [],
     } as ProductVariantType;
 
     addMutation.mutate(formattedData);
@@ -460,7 +406,7 @@ export default function ProductDetailPage() {
       await ProductVariantService.delete(id);
       queryClient.invalidateQueries({ queryKey: ["product"] });
       toast.success("Product Variant deleted successfully");
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete Product Variant");
     }
   };
@@ -479,11 +425,11 @@ export default function ProductDetailPage() {
       </div>
     );
   }
-  const mapVariantToForm = (variant: any) => {
+  const mapVariantToForm = (variant: ProductVariantType) => {
     return {
       ...variant,
       attributes:
-        variant.attributes?.map((attr: any) => ({
+        variant.attributes?.map((attr) => ({
           attributeId: attr.attributeId,
           value: attr.value,
         })) ?? [],
@@ -495,21 +441,23 @@ export default function ProductDetailPage() {
     label: "Tags",
     placeholder: "Enter tags",
     options:
-      tags?.map((tag: any) => ({
+      tags?.map((tag: TagType) => ({
         label: tag.name,
         value: tag.id,
       })) ?? [],
   };
 
-  const handleChange = (key: string, value: string[]) => {
+  const handleChange = (value: string[]) => {
     setTagsData(value);
     setChanged(true);
   };
 
   const handleUpdateTags = async () => {
     try {
-      const newTagPlaceholders = tagsData.filter((t) => t.startsWith("__new__"));
-      let resolvedTagIds = tagsData.filter((t) => !t.startsWith("__new__"));
+      const newTagPlaceholders = tagsData.filter((t) =>
+        t.startsWith("__new__"),
+      );
+      const resolvedTagIds = tagsData.filter((t) => !t.startsWith("__new__"));
 
       if (newTagPlaceholders.length > 0) {
         const newTagsToCreate = newTagPlaceholders.map((placeholder) => {
@@ -784,7 +732,7 @@ export default function ProductDetailPage() {
         </div>
       </div>
 
-      <UpdateModal<ProductVariantType>
+      <UpdateModal<ProductVariantType | CreateProductVariantType>
         open={updateOpen}
         setOpen={setUpdateOpen}
         title="Update Product Variant"
@@ -797,13 +745,14 @@ export default function ProductDetailPage() {
         )}
         initialData={selectedVariant ? mapVariantToForm(selectedVariant) : {}}
         allItems={productVariant}
+        variantMode={false}
         onUpdate={(updatedData) => {
           handleEditVariant(updatedData);
           setUpdateOpen(false);
         }}
       />
 
-      <UpdateModal<ProductVariantType>
+      <UpdateModal<ProductVariantType | CreateProductVariantType>
         open={addOpen}
         setOpen={setAddOpen}
         title="Add Product Variant"
@@ -815,7 +764,8 @@ export default function ProductDetailPage() {
           attributeDefinitions,
           true,
         )}
-        initialData={productData ? ({ productId: productData.id } as any) : {}}
+        initialData={productData ? { productId: productData.id } : {}}
+        variantMode={false}
         onUpdate={(updatedData) => {
           handleAddVariant(updatedData);
           setAddOpen(false);
