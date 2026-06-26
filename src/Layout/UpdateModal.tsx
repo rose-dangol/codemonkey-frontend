@@ -54,7 +54,7 @@ const renderBoolean = ({ field, controller }: FieldRenderProps) => (
     <input
       id={field.key}
       type="checkbox"
-      checked={!!controller.value}
+      checked={controller.value ?? true}
       onChange={(e) => controller.onChange(e.target.checked)}
       className="sr-only peer"
     />

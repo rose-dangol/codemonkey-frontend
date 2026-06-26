@@ -110,6 +110,11 @@ export default function AppLayout() {
             url: "/ordermgmt/tags",
             icon: SettingsIcon,
           },
+          {
+            title: "Delivery Charge",
+            url: "/ordermgmt/deliverycharge",
+            icon: SettingsIcon,
+          },
           // {
           //   title: "Inventory Overview",
           //   url: "/ordermgmt/inventoryOverview",

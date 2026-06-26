@@ -99,19 +99,19 @@ const Product = () => {
   });
 
   // ── Derived definitions (mirrors ProductVariant.tsx) ─────────────────────
-  // const attributeDefinitions = useMemo(() => {
-  //   if (!attributeData) return [];
-  //   const seen = new Map<string, string>();
-  //   for (const attr of attributeData) {
-  //     if (!seen.has(attr.key)) {
-  //       seen.set(attr.key, attr.attributeDefinitionId ?? attr.id);
-  //     }
-  //   }
-  //   return Array.from(seen.entries()).map(([key, id]) => ({
-  //     id,
-  //     name: key,
-  //   }));
-  // }, [attributeData]);
+  const attributeDefinitions = useMemo(() => {
+    if (!attributeData) return [];
+    const seen = new Map<string, string>();
+    for (const attr of attributeData) {
+      if (!seen.has(attr.key)) {
+        seen.set(attr.key, attr.attributeDefinitionId ?? attr.id);
+      }
+    }
+    return Array.from(seen.entries()).map(([key, id]) => ({
+      id,
+      name: key,
+    }));
+  }, [attributeData]);
 
   const cogsDefinitions = useMemo(() => {
     if (!cogsData) return [];
@@ -323,62 +323,48 @@ const Product = () => {
       // 2. Determine deleted variants
       const originalVariantIds =
         selectedProduct.variants?.map((v) => v.id) ?? [];
-
       const editedVariantIds = variantList
         .map((v) => v.id)
         .filter(Boolean) as string[];
-
       const deletedVariantIds = originalVariantIds.filter(
         (id) => !editedVariantIds.includes(id),
       );
 
-      const variantOperations = variantList.map((v) => {
-        const payload = {
-          productId,
-          sku: v.sku,
-          price: Number(v.price),
-          stock:
-            v.stocks?.[0]?.quantity !== undefined
-              ? Number(v.stocks[0].quantity)
-              : v.stocks !== undefined
-                ? Number(v.stocks)
-                : 0,
-          attributes: Array.isArray(v.attributes) ? v.attributes : [],
-          cogsData: v.cogsData ?? {},
-          images: v.images,
-        } as any;
+      if (deletedVariantIds.length > 0) {
+        await ProductVariantService.delete(deletedVariantIds);
+      }
 
-        return v.id
-          ? ProductVariantService.update(v.id, {
-              ...payload,
-              id: v.id,
-            })
-          : ProductVariantService.create(payload);
-      });
+      // 3. Create or update variants in parallel
+      await Promise.all(
+        variantList.map((v) => {
+          const payload = {
+            productId,
+            sku: v.sku,
+            price: Number(v.price),
+            stock:
+              v.stocks?.[0]?.quantity !== undefined
+                ? Number(v.stocks[0].quantity)
+                : v.stocks !== undefined
+                  ? Number(v.stocks)
+                  : 0,
+            attributes: Array.isArray(v.attributes) ? v.attributes : [],
+            cogsData: v.cogsData ?? {},
+            images: v.images,
+          } as any;
 
-      // 4. Run deletes and variant updates/creates concurrently
-      await Promise.all([
-        deletedVariantIds.length
-          ? ProductVariantService.delete(deletedVariantIds)
-          : Promise.resolve(),
-
-        Promise.all(variantOperations),
-      ]);
-
-      // 5. Refresh caches concurrently
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: ["products"],
+          if (v.id) {
+            return ProductVariantService.update(v.id, { ...payload, id: v.id });
+          } else {
+            return ProductVariantService.create(payload);
+          }
         }),
-        queryClient.invalidateQueries({
-          queryKey: ["productVariant"],
-        }),
-      ]);
+      );
 
       toast.success("Product and variants updated successfully!");
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["productVariant"] });
     } catch (err) {
       console.error("Failed to update product with variants", err);
-
       toast.error("Failed to update product with variants.");
     }
   };
@@ -501,7 +487,7 @@ const Product = () => {
           // variantMode={isVariantMode}
           variantMode={true}
           variants={variants}
-          attributeDefinitions={attributeData}
+          attributeDefinitions={attributeDefinitions}
           cogsDefinitions={cogsDefinitions}
         />
 
@@ -530,7 +516,7 @@ const Product = () => {
           variantMode={true}
           // onVariantModeChange={setIsVariantMode}
           variants={variants}
-          attributeDefinitions={attributeData}
+          attributeDefinitions={attributeDefinitions}
           cogsDefinitions={cogsDefinitions}
         />
       </>
