@@ -12,6 +12,15 @@ export type ProductVariantType = {
     id?: string;
     name?: string;
     attributeId?: string;
+    attribute?: {
+      id: string;
+      key: string;
+      name: string;
+      type: string;
+      allowedValues: string[];
+      isActive: boolean;
+      createdAt: string;
+    };
     key?: string;
     value: string;
   }[];

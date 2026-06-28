@@ -143,10 +143,9 @@ function VariantRow({
   const cogs = normaliseCogsData(variant.cogsData);
 
   const cogsEntries = Object.entries(cogs);
-  console.log(variant);
 
   const attributeSummary = (variant.attributes ?? [])
-    .map((a) => `${a?.name}: ${a?.value}`)
+    .map((a) => `${a?.attribute?.name}: ${a?.value}`)
     .join(" · ");
 
   const hasStock =

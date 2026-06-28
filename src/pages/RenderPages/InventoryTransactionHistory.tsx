@@ -88,7 +88,7 @@ export default function InventoryTransactionHistory() {
         ) : (
           <span className="text-[#6E6A7C] text-xs italic">
             —{" "}
-            {row.original.toStockStatusType.name != "available"
+            {row.original.toStockStatusType?.name != "available"
               ? ""
               : "New Stock"}
           </span>
@@ -97,12 +97,15 @@ export default function InventoryTransactionHistory() {
     {
       id: "toStatus",
       header: "To Status",
-      cell: ({ row }) => (
-        <StockStatusBadge
-          code={row.original?.toStockStatusType.code ?? ""}
-          name={row.original?.toStockStatusType.name ?? ""}
-        />
-      ),
+      cell: ({ row }) =>
+        row.original.toStockStatusType ? (
+          <StockStatusBadge
+            code={row.original.toStockStatusType.code}
+            name={row.original.toStockStatusType.name}
+          />
+        ) : (
+          <span className="text-[#6E6A7C] text-xs italic">—</span>
+        ),
     },
     {
       accessorKey: "quantity",
@@ -284,7 +287,7 @@ export default function InventoryTransactionHistory() {
         </div>
       ) : (
         <DataTable
-          id={transactions.map((t) => t.id)}
+          id={transactions?.map((t) => t.id)}
           fields={columns}
           data={transactions}
           enableRowSelection={false}

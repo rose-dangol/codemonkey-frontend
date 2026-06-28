@@ -9,6 +9,7 @@ import type { GeneralPageDto } from "./GeneralPage";
 import type { UpdateNavigationItemDto } from "./NavigationItem";
 import type { StockStatusType } from "./InventoryManagement";
 import type { ProductType } from "./Product";
+import type { DeliveryCharge as DeliveryChargeType } from "@/TypeDefinitions/DeliveryDefinitons";
 import type {
   CreateProductVariantType,
   ProductVariantType,
@@ -468,6 +469,30 @@ export const updateCogsDefinitionFields = (
       label: "Cogs Name",
       placeholder: "Enter cogs name",
       type: "text",
+    },
+  ];
+};
+
+export const updateDeliveryFields = (
+  _currentId?: string,
+): UpdateField<DeliveryChargeType>[] => {
+  return [
+    {
+      key: "city",
+      label: "City",
+      placeholder: "Enter city",
+      type: "text",
+    },
+    {
+      key: "charge",
+      label: "Charge",
+      placeholder: "Enter charge",
+      type: "number",
+    },
+    {
+      key: "isActive",
+      label: "Active",
+      type: "boolean",
     },
   ];
 };
