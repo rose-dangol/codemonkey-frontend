@@ -108,6 +108,7 @@ export interface RestockPayload {
   toStockStatusTypeId: string;
   quantity: number;
   note?: string;
+  outletId: string
 }
 
 export interface TransferPayload {

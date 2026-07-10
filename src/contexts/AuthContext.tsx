@@ -11,8 +11,9 @@ import { tokenStore } from "../lib/tokenStore";
 interface AuthContextValue {
   isAuthenticated: boolean;
   isLoading: boolean;
+  outletId: string | null;
   logout: () => Promise<void>;
-  onLoginSuccess: (accessToken: string) => void;
+  onLoginSuccess: (accessToken: string, outletId?: string | null) => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -20,11 +21,15 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [outletId, setOutletId] = useState<string | null>(null);
 
   useEffect(() => {
     silentRefresh()
-      .then((token) => {
-        tokenStore.set(token);
+      .then((data) => {
+        tokenStore.set(data.accessToken);
+        if (data.outletId) {
+          setOutletId(data.outletId);
+        }
         setIsAuthenticated(true);
       })
       .catch(() => {
@@ -35,17 +40,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     await logoutUser();
+    setOutletId(null);
     setIsAuthenticated(false);
   };
 
-  const onLoginSuccess = (accessToken: string) => {
+  const onLoginSuccess = (accessToken: string, assignedOutletId?: string | null) => {
     tokenStore.set(accessToken);
+    if (assignedOutletId) {
+      setOutletId(assignedOutletId);
+    }
     setIsAuthenticated(true);
   };
 
   return (
     <AuthContext.Provider
-      value={{ isAuthenticated, isLoading, logout, onLoginSuccess }}
+      value={{ isAuthenticated, isLoading, outletId, logout, onLoginSuccess }}
     >
       {children}
     </AuthContext.Provider>

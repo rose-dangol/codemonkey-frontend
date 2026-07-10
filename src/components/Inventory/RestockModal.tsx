@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { InventoryService } from "@/services/OrderManagement/inventoryManagement.service";
 import type { StockStatusType } from "@/TypeDefinitions/InventoryManagement";
 import { stockStatusService } from "@/services/InventoryManagement/stockStatus.service";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface RestockModalProps {
   open: boolean;
@@ -32,6 +33,7 @@ export default function RestockModal({
   const [toStatusId, setToStatusId] = useState("");
   const [quantity, setQuantity] = useState<number | "">("");
   const [note, setNote] = useState("");
+  const { outletId } = useAuth();
 
   const { data: statuses = [] } = useQuery<StockStatusType[]>({
     queryKey: ["stock-statuses"],
@@ -40,6 +42,7 @@ export default function RestockModal({
   });
 
   const activeStatuses = statuses.filter((s) => s.isActive);
+ 
 
   const { mutate, isPending } = useMutation({
     mutationFn: () =>
@@ -48,6 +51,7 @@ export default function RestockModal({
         toStockStatusTypeId: toStatusId,
         quantity: Number(quantity),
         note: note || undefined,
+        outletId: outletId!,
       }),
     onSuccess: () => {
       toast.success("Stock restocked successfully");
