@@ -18,6 +18,7 @@ import {
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { OrderService } from "@/services/OrderManagement/OrderService";
+import { useAuth } from "@/contexts/AuthContext";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -286,6 +287,8 @@ function OrderDetailSkeleton() {
 
 export default function OrderDetail() {
   const { id } = useParams();
+
+  const {outletId} = useAuth();
   const queryClient = useQueryClient();
 
   const {
