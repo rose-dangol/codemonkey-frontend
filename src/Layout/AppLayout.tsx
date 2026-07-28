@@ -115,6 +115,11 @@ export default function AppLayout() {
             url: "/ordermgmt/deliverycharge",
             icon: SettingsIcon,
           },
+          {
+            title: "Pos Checkout",
+            url: "/ordermgmt/posCheckout",
+            icon: SettingsIcon,
+          },
           // {
           //   title: "Inventory Overview",
           //   url: "/ordermgmt/inventoryOverview",

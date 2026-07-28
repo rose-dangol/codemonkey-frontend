@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL ?? "http://localhost:4004/",
   withCredentials: true, // sends the httpOnly refreshToken cookie automatically
+  paramsSerializer: { indexes: null }, // serialize arrays as repeated keys: ?categoryIds=a&categoryIds=b
 });
 
 // Refresh-queue state

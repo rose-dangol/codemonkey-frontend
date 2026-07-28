@@ -2,6 +2,33 @@ import api from "@/api/ApiUrl";
 import type { UpdateProductDto } from "@/TypeDefinitions/ModalType";
 import { toast } from "react-toastify";
 
+export interface ProductFilterResponse {
+  data: any[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+export type ProductFilterParams = {
+  search?: string;
+  categoryIds?: string[];
+  includeSubCategories?: boolean;
+  brandIds?: string[];
+  minPrice?: number;
+  maxPrice?: number;
+  inStock?: boolean;
+  stockMin?: number;
+  stockMax?: number;
+  tagSlugs?: string[];
+  tagMatchMode?: "any" | "all";
+  excludeHidden?: boolean;
+  page?: number;
+  pageSize?: number;
+  sortBy?: "name" | "createdAt" | "minPrice" | "totalStock";
+  sortOrder?: "asc" | "desc";
+};
+
 export const ProductService = {
   getAll: async () => {
     const res = await api.get("product/getAllProduct?limit=1000");
@@ -84,6 +111,15 @@ export const ProductService = {
     const res = await api.delete(`product/deleteProduct`, {
       data: { productId: id },
     });
+    return res.data;
+  },
+  filter: async (
+    params: ProductFilterParams,
+  ): Promise<ProductFilterResponse> => {
+    const res = await api.get(`/product/filter`, {
+      params,
+    });
+
     return res.data;
   },
 };
