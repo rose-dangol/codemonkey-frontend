@@ -26,7 +26,7 @@ import GeneralPageCreate from "@/pages/NavigationItem/GeneralPageCreate";
 import NavigationItem from "@/pages/NavigationItem/NavigationItem";
 import ProductDetailPage from "@/pages/DetailPages/ProductDetail";
 import DeliveryCharge from "@/pages/RenderPages/DeliveryCharge";
-
+import PosCheckout from "@/pages/PosPage/PosCheckout";
 
 const Router = () => {
   return (
@@ -91,6 +91,10 @@ const Router = () => {
           <Route
             path="/inventory/stock-statuses"
             element={<StockStatusManagement />}
+          />
+          <Route
+            path="/ordermgmt/posCheckout"
+            element={<PosCheckout />}
           />
         </Route>
       </Route>
